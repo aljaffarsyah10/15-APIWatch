@@ -29,26 +29,45 @@ Built on **Next.js 16 (Turbopack, Partial Prefetching)**, **PostgreSQL 16**, **R
 
 ---
 
-## 📸 Dashboard & UI Preview
+## 📸 Visual Previews: Light & Midnight Dark Themes
 
 <div align="center">
-  <img src="docs/assets/dashboard-preview.svg" alt="APIWatch Dashboard Mockup" width="100%" style="border-radius: 10px; border: 1px solid #1e293b;" />
+
+### ☀️ Light Theme — Animated Ambient Mesh & Interactive Telemetry Console
+*Luminous cool-slate canvas (`#F8FAFC`) with animated indigo/sky/emerald ambient blobs, architectural tech grid, and live interactive probe console.*
+
+<img src="docs/assets/homepage-preview.svg" alt="APIWatch Light Theme Homepage & Interactive Console" width="100%" style="border-radius: 12px; border: 1px solid #cbd5e1; margin-bottom: 24px;" />
+
+### 🌙 Midnight Dark Theme — Production Observability Dashboard
+*Deep navy Raycast/Linear aesthetic (`#090D16`) with high-density telemetry cards, monotonic latency wave charts, and status indicators.*
+
+<img src="docs/assets/dashboard-preview.svg" alt="APIWatch Dashboard Mockup" width="100%" style="border-radius: 12px; border: 1px solid #1e293b;" />
+
 </div>
 
 ---
 
-## 💎 World-Class UI/UX Experience
+## 💎 World-Class UI & Interactive UX Experience
 
-APIWatch follows an exclusive design system benchmarked against **Linear, Stripe, Raycast, and Vercel**:
+APIWatch follows an uncompromising design system benchmarked against **Linear, Stripe, Raycast, and Vercel**:
 
+- **Fluid Animated Ambient Background**:
+  - Continuous CSS keyframe-animated ambient light blobs (`.animate-blob-1`, `.animate-blob-2`, `.animate-blob-3`) gently drifting across the canvas.
+  - Subtle shimmering light rays (`.animate-shimmer-ray`) and a high-precision architectural micro-dot tech grid overlay (`.bg-tech-grid`).
 - **Dual-Theme Engine (Light & Midnight Dark)**:
-  - **Light Mode**: Crisp, high-contrast Slate surface (`#F8FAFC` base, `#FFFFFF` cards, `#0F172A` text).
+  - **Light Mode**: Radiant, high-contrast Slate surface (`#F8FAFC` base, translucent glass cards with `backdrop-blur-md`, `#090E17` typography).
   - **Deep Midnight Dark Mode**: Immersive deep navy palette (`#090D16` base, `#0F172A` cards, `#1E293B` borders).
-  - **Zero-Flicker Switcher**: Powered by `useSyncExternalStore` (React 19 standard) eliminating hydration mismatches.
-- **High-Density Telemetry Cards**: Metric figures formatted in clean monospace tabular typography (`font-mono`) for effortless cognitive scanning.
-- **Categorized Linear Sidebar**: Distinct navigation sections (`MONITORING`, `ALERTS & STATUS`, `PREFERENCES`) with active indicator pills and live scheduler heartbeat.
-- **Interactive Latency Wave Visualizations**: Recharts Area charts with custom gradients, smooth curves, and microsecond tooltips.
-- **Method Color Badges**: Instant visual identification for `GET` (Emerald), `POST` (Blue), `PUT` (Amber), `PATCH` (Purple), and `DELETE` (Rose).
+  - **Zero-Flicker Switcher**: Engineered with `useSyncExternalStore` (React 19 standard) eliminating SSR hydration mismatches.
+- **Hands-on Interactive UX Widgets**:
+  - **Interactive Console Demo**: Switchable live presets (`Stripe Charges API`, `Auth0 JWT OAuth`, `Checkout Webhook`), simulated probe dispatch with micro-spinner, encrypted header inspection, and an interactive 30-day uptime timeline with day-by-day latency tooltips.
+  - **Interactive Rule Assertion Simulator**: Real-time SLA violation testing with an interactive latency threshold slider (50ms–300ms) and multi-rule toggles.
+  - **Animated Knowledge Base Accordion**: Technical deep dive answering SSRF protection, AES-256-GCM vault security, and Next.js 16 Partial Prerendering.
+- **High-Density Telemetry Typography**:
+  - Headings & prose rendered with **Inter** for optimal cognitive legibility.
+  - Metric figures, timestamps, and HTTP tokens set in **JetBrains Mono** (`font-mono`) tabular numbers for effortless scanning.
+- **Glassmorphism & Elevation**:
+  - Cards feature `bg-card/90 backdrop-blur-xs border border-border/80 shadow-2xs` with smooth micro-hover lifts (`.card-elevated`).
+- **Method Color Badges**: Instant visual identification for `GET` (Blue/Indigo), `POST` (Blue), `PUT` (Amber), `PATCH` (Purple), and `DELETE` (Rose).
 - **One-Click URL Copy**: Seamless clipboard interaction with green verification feedback.
 
 ---

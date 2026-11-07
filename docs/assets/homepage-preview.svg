@@ -1,0 +1,211 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 620" width="100%" height="100%" style="background:#f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <defs>
+    <!-- Light Mode Ambient Mesh Gradients -->
+    <radialGradient id="meshIndigo" cx="15%" cy="10%" r="50%">
+      <stop offset="0%" stop-color="#6366f1" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#6366f1" stop-opacity="0.0"/>
+    </radialGradient>
+    <radialGradient id="meshCyan" cx="85%" cy="15%" r="45%">
+      <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.16"/>
+      <stop offset="100%" stop-color="#0ea5e9" stop-opacity="0.0"/>
+    </radialGradient>
+    <radialGradient id="meshEmerald" cx="50%" cy="95%" r="40%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0.0"/>
+    </radialGradient>
+
+    <!-- Text Title Gradient -->
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="50%" stop-color="#4f46e5"/>
+      <stop offset="100%" stop-color="#0d9488"/>
+    </linearGradient>
+
+    <!-- Console Hairline Gradient -->
+    <linearGradient id="consoleHairline" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="50%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#14b8a6"/>
+    </linearGradient>
+
+    <!-- Drop Shadows -->
+    <filter id="consoleShadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="16" stdDeviation="24" flood-color="#0f172a" flood-opacity="0.12"/>
+    </filter>
+    <filter id="cardShadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="0" dy="4" stdDeviation="8" flood-color="#0f172a" flood-opacity="0.05"/>
+    </filter>
+
+    <!-- Dot Pattern -->
+    <pattern id="dotPattern" x="0" y="0" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="1" fill="#94a3b8" fill-opacity="0.25"/>
+    </pattern>
+  </defs>
+
+  <!-- Ambient Background Mesh Glows -->
+  <rect width="1000" height="620" fill="#f8fafc"/>
+  <rect width="1000" height="620" fill="url(#dotPattern)"/>
+  <rect width="1000" height="620" fill="url(#meshIndigo)"/>
+  <rect width="1000" height="620" fill="url(#meshCyan)"/>
+  <rect width="1000" height="620" fill="url(#meshEmerald)"/>
+
+  <!-- Public Navbar -->
+  <rect width="1000" height="56" fill="#ffffff" fill-opacity="0.85" stroke="#e2e8f0" stroke-width="1"/>
+  <!-- Logo -->
+  <rect x="36" y="14" width="28" height="28" rx="6" fill="#2563eb"/>
+  <path d="M 43 28 L 47 23 L 52 33 L 57 28" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="72" y="33" fill="#090e17" font-size="15" font-weight="800" letter-spacing="-0.5">APIWatch</text>
+  <rect x="145" y="20" width="34" height="16" rx="8" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="152" y="32" fill="#1d4ed8" font-size="9" font-weight="700" font-family="monospace">PRO</text>
+
+  <!-- Nav links -->
+  <circle cx="700" cy="28" r="3.5" fill="#10b981"/>
+  <text x="710" y="32" fill="#475569" font-size="12" font-weight="600">Live Status</text>
+  <text x="795" y="32" fill="#475569" font-size="12" font-weight="600">Pricing</text>
+  <text x="855" y="32" fill="#475569" font-size="12" font-weight="600">Sign In</text>
+  <!-- CTA Button -->
+  <rect x="915" y="14" width="55" height="28" rx="6" fill="#2563eb"/>
+  <text x="926" y="32" fill="#ffffff" font-size="11" font-weight="700">Start</text>
+
+  <!-- Hero Headline -->
+  <g transform="translate(0, 85)">
+    <!-- Pill Badge -->
+    <rect x="360" y="0" width="280" height="24" rx="12" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+    <circle cx="375" cy="12" r="3" fill="#10b981"/>
+    <text x="385" y="16" fill="#1d4ed8" font-size="10.5" font-weight="700">Next-Gen API Telemetry Engine</text>
+
+    <!-- Main Title -->
+    <text x="500" y="48" text-anchor="middle" fill="#090e17" font-size="30" font-weight="900" letter-spacing="-1">
+      Precision API Telemetry for <tspan fill="url(#textGrad)">Modern Engineering</tspan>
+    </text>
+    <text x="500" y="70" text-anchor="middle" fill="#64748b" font-size="12" font-weight="500">
+      Sub-minute distributed BullMQ probing, AES-256 secret vault, and automated incident alerting.
+    </text>
+  </g>
+
+  <!-- Showstopper: Interactive Telemetry Console Mockup -->
+  <g transform="translate(100, 195)" filter="url(#consoleShadow)">
+    <!-- Console Container -->
+    <rect width="800" height="385" rx="16" fill="#ffffff" fill-opacity="0.95" stroke="#cbd5e1" stroke-width="1"/>
+    
+    <!-- Top Gradient Hairline -->
+    <rect width="800" height="3.5" rx="1.5" fill="url(#consoleHairline)"/>
+
+    <!-- Window Header -->
+    <rect y="3.5" width="800" height="40" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+    <circle cx="22" cy="23.5" r="5" fill="#f43f5e"/>
+    <circle cx="38" cy="23.5" r="5" fill="#f59e0b"/>
+    <circle cx="54" cy="23.5" r="5" fill="#10b981"/>
+    <text x="75" y="27" fill="#334155" font-size="11" font-family="monospace" font-weight="600">apiwatch.telemetry.daemon // live-interactive</text>
+
+    <rect x="635" y="14" width="145" height="20" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1"/>
+    <circle cx="648" cy="24" r="3" fill="#10b981"/>
+    <text x="657" y="27" fill="#047857" font-size="10" font-family="monospace" font-weight="700">14/14 Probes Healthy</text>
+
+    <!-- Preset Selector Tabs -->
+    <rect y="44" width="800" height="34" fill="#ffffff" stroke="#f1f5f9" stroke-width="1"/>
+    <rect x="18" y="50" width="135" height="22" rx="5" fill="#2563eb"/>
+    <text x="28" y="65" fill="#ffffff" font-size="10" font-weight="700">Stripe Charges API</text>
+
+    <rect x="160" y="50" width="125" height="22" rx="5" fill="#f1f5f9"/>
+    <text x="172" y="65" fill="#64748b" font-size="10" font-weight="600">Auth0 JWT OAuth</text>
+
+    <rect x="292" y="50" width="130" height="22" rx="5" fill="#f1f5f9"/>
+    <text x="303" y="65" fill="#64748b" font-size="10" font-weight="600">Checkout Webhook</text>
+
+    <!-- Active Probe Feed Banner -->
+    <g transform="translate(20, 92)" filter="url(#cardShadow)">
+      <rect width="760" height="64" rx="10" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+      <rect x="16" y="16" width="38" height="20" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+      <text x="24" y="30" fill="#1d4ed8" font-size="10" font-family="monospace" font-weight="800">GET</text>
+      <text x="64" y="28" fill="#090e17" font-size="12" font-family="monospace" font-weight="700">https://api.stripe.com/v1/charges</text>
+      <text x="64" y="44" fill="#64748b" font-size="10" font-family="monospace">Cluster: worker-us-east-1 · Interval: 30s · <tspan fill="#059669" font-weight="600">TLS 1.3 Valid</tspan></text>
+      
+      <!-- Latency & Status -->
+      <rect x="670" y="14" width="74" height="22" rx="5" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1"/>
+      <text x="682" y="29" fill="#047857" font-size="11" font-family="monospace" font-weight="800">200 OK</text>
+      <text x="680" y="48" fill="#64748b" font-size="10" font-family="monospace">monotonic: <tspan fill="#090e17" font-weight="700">78ms</tspan></text>
+    </g>
+
+    <!-- 30-Day Rolling Uptime Bar Visualization -->
+    <g transform="translate(20, 170)">
+      <rect width="760" height="60" rx="8" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+      <text x="14" y="20" fill="#334155" font-size="10.5" font-weight="700">30-Day Rolling Uptime Ratio</text>
+      <text x="695" y="20" fill="#059669" font-size="10.5" font-family="monospace" font-weight="800">100.0% Uptime</text>
+
+      <!-- 32 Green Ticks -->
+      <g transform="translate(14, 28)">
+        <rect x="0" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="23" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="46" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="69" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="92" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="115" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="138" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="161" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="184" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="207" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="230" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="253" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="276" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="299" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="322" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="345" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="368" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="391" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="414" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="437" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="460" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="483" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="506" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="529" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="552" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="575" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="598" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="621" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="644" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="667" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="690" width="20" height="18" rx="2" fill="#10b981"/>
+        <rect x="713" width="20" height="18" rx="2" fill="#34d399"/>
+      </g>
+    </g>
+
+    <!-- 3 Vibrant Stat Cards -->
+    <g transform="translate(20, 245)">
+      <!-- Card 1: System Uptime -->
+      <g transform="translate(0, 0)" filter="url(#cardShadow)">
+        <rect width="242" height="85" rx="10" fill="#ecfdf5" stroke="#a7f3d0" stroke-width="1"/>
+        <text x="14" y="24" fill="#047857" font-size="10" font-weight="700">SYSTEM UPTIME</text>
+        <circle cx="218" cy="20" r="8" fill="#d1fae5"/>
+        <path d="M 215 20 L 217 22 L 221 18" stroke="#059669" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+        <text x="14" y="55" fill="#047857" font-size="24" font-family="monospace" font-weight="800">99.99%</text>
+        <text x="14" y="72" fill="#059669" font-size="10" font-weight="500">Zero outage recorded in 30d</text>
+      </g>
+
+      <!-- Card 2: Monotonic Latency -->
+      <g transform="translate(259, 0)" filter="url(#cardShadow)">
+        <rect width="242" height="85" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+        <text x="14" y="24" fill="#1d4ed8" font-size="10" font-weight="700">MONOTONIC LATENCY</text>
+        <circle cx="218" cy="20" r="8" fill="#dbeafe"/>
+        <circle cx="218" cy="20" r="4" stroke="#2563eb" stroke-width="1.2" fill="none"/>
+        <text x="14" y="55" fill="#1e293b" font-size="24" font-family="monospace" font-weight="800">78ms</text>
+        <text x="14" y="72" fill="#64748b" font-size="10" font-weight="500">Sub-millisecond resolution timer</text>
+      </g>
+
+      <!-- Card 3: Security Enclave -->
+      <g transform="translate(518, 0)" filter="url(#cardShadow)">
+        <rect width="242" height="85" rx="10" fill="#faf5ff" stroke="#e9d5ff" stroke-width="1"/>
+        <text x="14" y="24" fill="#7e22ce" font-size="10" font-weight="700">SECURITY ENCLAVE</text>
+        <circle cx="218" cy="20" r="8" fill="#f3e8ff"/>
+        <path d="M 215 19 L 218 16 L 221 19 L 221 23 L 215 23 Z" stroke="#9333ea" stroke-width="1.2" fill="none"/>
+        <text x="14" y="55" fill="#1e293b" font-size="22" font-family="monospace" font-weight="800">AES-256</text>
+        <text x="14" y="72" fill="#64748b" font-size="10" font-weight="500">SSRF Guard &amp; Vault Secrets</text>
+      </g>
+    </g>
+
+    <!-- Bottom Footer Note -->
+    <text x="400" y="365" text-anchor="middle" fill="#94a3b8" font-size="10.5" font-family="monospace">
+      ✓ Real-time WebSocket feed · Distributed BullMQ Probes · Automated Cooldown Suppression
+    </text>
+  </g>
+</svg>
