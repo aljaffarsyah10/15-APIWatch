@@ -1,0 +1,215 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ----------------------------------------------------
+// Authentication Models (Better Auth Standard)
+// ----------------------------------------------------
+
+model User {
+  id            String         @id @default(uuid())
+  name          String
+  email         String         @unique
+  emailVerified Boolean        @default(false)
+  image         String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  sessions      Session[]
+  accounts      Account[]
+  monitors      Monitor[]
+  alertChannels AlertChannel[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id @default(uuid())
+  userId                String
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("accounts")
+}
+
+model Verification {
+  id         String   @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verifications")
+}
+
+// ----------------------------------------------------
+// Core Monitoring Models
+// ----------------------------------------------------
+
+enum HttpMethod {
+  GET
+  POST
+  PUT
+  PATCH
+  DELETE
+  HEAD
+}
+
+enum MonitorStatus {
+  UP
+  DOWN
+  PAUSED
+  UNKNOWN
+}
+
+enum CheckStatus {
+  QUEUED
+  RUNNING
+  SUCCESS
+  FAILURE
+  TIMEOUT
+  NETWORK_ERROR
+  VALIDATION_ERROR
+}
+
+model Monitor {
+  id                      String         @id @default(uuid())
+  userId                  String
+  name                    String
+  url                     String
+  method                  HttpMethod     @default(GET)
+  intervalSeconds         Int            @default(60)
+  timeoutMs               Int            @default(10000)
+  expectedStatusCodes     Json           @default("[200]")
+
+  // Encrypted secrets
+  requestHeadersEncrypted String?        @db.Text
+  requestBodyEncrypted    String?        @db.Text
+
+  // Validation rules
+  expectedHeaders         Json?
+  bodyValidation          Json?
+
+  // State tracking
+  status                  MonitorStatus  @default(UNKNOWN)
+  isActive                Boolean        @default(true)
+  lastCheckedAt           DateTime?
+  lastSuccessfulAt        DateTime?
+  nextCheckAt             DateTime?
+
+  createdAt               DateTime       @default(now())
+  updatedAt               DateTime       @updatedAt
+
+  user                    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  checks                  MonitorCheck[]
+  alertEvents             AlertEvent[]
+
+  @@index([userId])
+  @@index([isActive, status, nextCheckAt])
+  @@map("monitors")
+}
+
+model MonitorCheck {
+  id                String       @id @default(uuid())
+  monitorId         String
+  status            CheckStatus  @default(QUEUED)
+  httpStatus        Int?
+  responseTimeMs    Int?
+  failureReason     String?      @db.Text
+  validationResults Json?
+  checkedAt         DateTime?
+  createdAt         DateTime     @default(now())
+
+  monitor           Monitor      @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+
+  @@index([monitorId, checkedAt(sort: Desc)])
+  @@index([status, createdAt])
+  @@map("monitor_checks")
+}
+
+// ----------------------------------------------------
+// Alerting Models
+// ----------------------------------------------------
+
+enum AlertChannelType {
+  EMAIL
+  WEBHOOK
+}
+
+enum AlertEventType {
+  DOWN
+  RECOVERY
+}
+
+enum DeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+model AlertChannel {
+  id              String           @id @default(uuid())
+  userId          String
+  type            AlertChannelType
+  destination     String
+  secretEncrypted String?          @db.Text
+  isEnabled       Boolean          @default(true)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  alertEvents     AlertEvent[]
+
+  @@index([userId])
+  @@map("alert_channels")
+}
+
+model AlertEvent {
+  id             String         @id @default(uuid())
+  monitorId      String
+  channelId      String
+  eventType      AlertEventType
+  deliveryStatus DeliveryStatus @default(PENDING)
+  attemptCount   Int            @default(0)
+  lastError      String?        @db.Text
+  createdAt      DateTime       @default(now())
+  deliveredAt    DateTime?
+
+  monitor        Monitor        @relation(fields: [monitorId], references: [id], onDelete: Cascade)
+  channel        AlertChannel   @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@index([monitorId])
+  @@index([channelId])
+  @@map("alert_events")
+}
