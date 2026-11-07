@@ -49,6 +49,14 @@ export function MonitorListTable() {
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [methodFilter, setMethodFilter] = useState<string>("ALL");
+
+  const displayedMonitors = monitors.filter((m) => {
+    if (methodFilter !== "ALL" && m.method !== methodFilter) {
+      return false;
+    }
+    return true;
+  });
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -173,13 +181,27 @@ export function MonitorListTable() {
         </div>
 
         <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+          <select
+            value={methodFilter}
+            onChange={(e) => setMethodFilter(e.target.value)}
+            className="h-8 rounded-md border border-input bg-background px-2 text-xs shadow-sm focus:outline-none"
+            aria-label="Filter by HTTP method"
+          >
+            <option value="ALL">All Methods</option>
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="PATCH">PATCH</option>
+            <option value="DELETE">DELETE</option>
+          </select>
+
           {["ALL", "UP", "DOWN", "PAUSED"].map((status) => (
             <Button
               key={status}
               variant={statusFilter === status ? "default" : "outline"}
               size="sm"
               onClick={() => setStatusFilter(status)}
-              className="text-xs capitalize"
+              className="text-xs capitalize h-8"
             >
               {status.toLowerCase()}
             </Button>
@@ -199,16 +221,16 @@ export function MonitorListTable() {
             handleRefresh();
           }}
         />
-      ) : monitors.length === 0 ? (
+      ) : displayedMonitors.length === 0 ? (
         <EmptyState
-          title={search || statusFilter !== "ALL" ? "No matching monitors found" : "No Monitors Configured Yet"}
+          title={search || statusFilter !== "ALL" || methodFilter !== "ALL" ? "No matching monitors found" : "No Monitors Configured Yet"}
           description={
-            search || statusFilter !== "ALL"
+            search || statusFilter !== "ALL" || methodFilter !== "ALL"
               ? "Try adjusting your search keywords or filter criteria."
               : "Get started by adding your first endpoint monitor."
           }
-          actionLabel={search || statusFilter !== "ALL" ? undefined : "Add Your First Monitor"}
-          onAction={search || statusFilter !== "ALL" ? undefined : () => {}}
+          actionLabel={search || statusFilter !== "ALL" || methodFilter !== "ALL" ? undefined : "Add Your First Monitor"}
+          onAction={search || statusFilter !== "ALL" || methodFilter !== "ALL" ? undefined : () => {}}
         />
       ) : (
         <div className="rounded-md border bg-card">
@@ -224,7 +246,7 @@ export function MonitorListTable() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {monitors.map((m) => (
+              {displayedMonitors.map((m) => (
                 <TableRow key={m.id}>
                   <TableCell>
                     <div className="space-y-0.5">

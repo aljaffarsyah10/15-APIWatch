@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
+  Download,
   Loader2,
   Pause,
   Play,
@@ -21,7 +22,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -140,13 +141,15 @@ export function MonitorDetailView({ id }: MonitorDetailViewProps) {
   };
 
   const handleManualCheck = async () => {
+    if (!monitor) return;
     setIsChecking(true);
     try {
-      // Simulate/trigger immediate check
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      const result = await monitorApi.checkNow(monitor.id);
       await reloadData();
-      toast.success("Check completed", {
-        description: "Latest response metrics synchronized",
+      toast.success("Manual check complete", {
+        description: `Target returned ${result.status} (${
+          result.responseTimeMs ? `${result.responseTimeMs} ms` : "No response"
+        })`,
       });
     } catch (err: unknown) {
       toast.error("Manual check failed", {
@@ -230,6 +233,18 @@ export function MonitorDetailView({ id }: MonitorDetailViewProps) {
 
         {/* Action Controls */}
         <div className="flex items-center gap-2">
+          <a
+            href={monitorApi.getExportUrl(monitor.id)}
+            download
+            className={cn(
+              buttonVariants({ variant: "outline", size: "sm" }),
+              "gap-1.5"
+            )}
+          >
+            <Download className="h-4 w-4" />
+            Export CSV
+          </a>
+
           <Button
             variant="outline"
             size="sm"

@@ -74,6 +74,15 @@ export const monitorApi = {
     return res.data;
   },
 
+  checkNow: async (id: string) => {
+    const res = await apiClient.post<MonitorCheckHistoryItem>(
+      `/api/monitors/${id}/check-now`
+    );
+    return res.data;
+  },
+
+  getExportUrl: (id: string) => `/api/monitors/${id}/export`,
+
   getChecks: async (id: string, page = 1, limit = 20) => {
     const res = await apiClient.get<MonitorCheckHistoryItem[]>(
       `/api/monitors/${id}/checks`,
