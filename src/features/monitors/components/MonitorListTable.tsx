@@ -15,7 +15,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -44,12 +44,12 @@ import { getErrorMessage } from "@/lib/api/error";
 import { cn } from "@/lib/utils";
 
 const METHOD_COLORS: Record<string, string> = {
-  GET: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
-  POST: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20",
-  PUT: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20",
-  PATCH: "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20",
-  DELETE: "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20",
-  HEAD: "bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-500/20",
+  GET: "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30",
+  POST: "bg-blue-500/15 text-blue-800 dark:text-blue-300 border-blue-500/30",
+  PUT: "bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30",
+  PATCH: "bg-purple-500/15 text-purple-800 dark:text-purple-300 border-purple-500/30",
+  DELETE: "bg-rose-500/15 text-rose-800 dark:text-rose-300 border-rose-500/30",
+  HEAD: "bg-slate-500/15 text-slate-800 dark:text-slate-300 border-slate-500/30",
 };
 
 export function MonitorListTable() {
@@ -170,7 +170,7 @@ export function MonitorListTable() {
             size="sm"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="gap-1.5 h-8.5"
+            className="gap-1.5 h-8.5 bg-card"
           >
             <RefreshCw
               className={cn("h-3.5 w-3.5 text-muted-foreground", isRefreshing && "animate-spin text-primary")}
@@ -179,7 +179,7 @@ export function MonitorListTable() {
           </Button>
           <Link
             href="/monitors/new"
-            className={cn(buttonVariants({ size: "sm" }), "gap-1.5 h-8.5 shadow-2xs")}
+            className="inline-flex items-center justify-center gap-1.5 h-8.5 px-3.5 rounded-md text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-sm transition-all duration-200 active:scale-95"
           >
             <PlusCircle className="h-3.5 w-3.5" />
             Add Monitor
@@ -193,7 +193,7 @@ export function MonitorListTable() {
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Search by name or URL..."
-            className="pl-9 h-8.5 text-xs bg-card"
+            className="pl-9 h-8.5 text-xs bg-card border-border/80"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -203,7 +203,7 @@ export function MonitorListTable() {
           <select
             value={methodFilter}
             onChange={(e) => setMethodFilter(e.target.value)}
-            className="h-8.5 rounded-md border border-input bg-card px-2.5 text-xs font-medium text-foreground shadow-2xs focus:outline-none focus:ring-1 focus:ring-ring"
+            className="h-8.5 rounded-md border border-border/80 bg-card px-2.5 text-xs font-semibold text-foreground shadow-2xs focus:outline-none focus:ring-1 focus:ring-ring"
             aria-label="Filter by HTTP method"
           >
             <option value="ALL">All Methods</option>
@@ -214,16 +214,16 @@ export function MonitorListTable() {
             <option value="DELETE">DELETE</option>
           </select>
 
-          <div className="flex items-center p-0.5 rounded-md bg-muted/60 border border-border/80">
+          <div className="flex items-center p-0.5 rounded-lg bg-card/80 border border-border/80 shadow-2xs">
             {["ALL", "UP", "DOWN", "PAUSED"].map((status) => (
               <button
                 key={status}
                 type="button"
                 onClick={() => setStatusFilter(status)}
                 className={cn(
-                  "px-2.5 py-1 text-xs font-medium rounded transition-all",
+                  "px-3 py-1 text-xs font-semibold rounded-md transition-all",
                   statusFilter === status
-                    ? "bg-card text-foreground shadow-2xs font-semibold"
+                    ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs font-bold"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -258,30 +258,30 @@ export function MonitorListTable() {
           onAction={search || statusFilter !== "ALL" || methodFilter !== "ALL" ? undefined : () => {}}
         />
       ) : (
-        <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-2xs">
+        <div className="rounded-xl border border-border/80 bg-card overflow-hidden shadow-xs card-elevated">
           <Table>
-            <TableHeader className="bg-muted/30">
+            <TableHeader className="bg-muted/40">
               <TableRow className="border-b border-border/80 hover:bg-transparent">
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Monitor</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Status</TableHead>
-                <TableHead className="hidden md:table-cell text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Interval</TableHead>
-                <TableHead className="hidden lg:table-cell text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Latency</TableHead>
-                <TableHead className="hidden sm:table-cell text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Last Checked</TableHead>
-                <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Actions</TableHead>
+                <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground py-3.5">Monitor</TableHead>
+                <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground py-3.5">Status</TableHead>
+                <TableHead className="hidden md:table-cell text-xs font-bold uppercase tracking-wider text-muted-foreground py-3.5">Interval</TableHead>
+                <TableHead className="hidden lg:table-cell text-xs font-bold uppercase tracking-wider text-muted-foreground py-3.5">Latency</TableHead>
+                <TableHead className="hidden sm:table-cell text-xs font-bold uppercase tracking-wider text-muted-foreground py-3.5">Last Checked</TableHead>
+                <TableHead className="text-right text-xs font-bold uppercase tracking-wider text-muted-foreground py-3.5">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {displayedMonitors.map((m) => (
                 <TableRow
                   key={m.id}
-                  className="border-b border-border/60 hover:bg-muted/40 transition-colors group"
+                  className="border-b border-border/60 hover:bg-muted/30 transition-colors group"
                 >
-                  <TableCell className="py-3">
+                  <TableCell className="py-3.5">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span
                           className={cn(
-                            "text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded border uppercase",
+                            "text-[10px] font-mono font-bold px-1.5 py-0.5 rounded border uppercase shadow-2xs",
                             METHOD_COLORS[m.method] || "bg-muted text-muted-foreground"
                           )}
                         >
@@ -289,7 +289,7 @@ export function MonitorListTable() {
                         </span>
                         <Link
                           href={`/monitors/${m.id}`}
-                          className="font-semibold text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 text-sm"
+                          className="font-bold text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 text-sm tracking-tight"
                         >
                           {m.name}
                           <ExternalLink className="h-3 w-3 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -304,7 +304,7 @@ export function MonitorListTable() {
                           title="Copy URL"
                         >
                           {copiedId === m.id ? (
-                            <Check className="h-3 w-3 text-emerald-500" />
+                            <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
                           ) : (
                             <Copy className="h-3 w-3" />
                           )}
@@ -312,22 +312,22 @@ export function MonitorListTable() {
                       </div>
                     </div>
                   </TableCell>
-                  <TableCell className="py-3">
+                  <TableCell className="py-3.5">
                     <StatusBadge status={m.status} />
                   </TableCell>
-                  <TableCell className="hidden md:table-cell text-xs text-muted-foreground font-mono py-3">
+                  <TableCell className="hidden md:table-cell text-xs text-muted-foreground font-mono py-3.5">
                     Every {m.intervalSeconds}s
                   </TableCell>
-                  <TableCell className="hidden lg:table-cell py-3">
+                  <TableCell className="hidden lg:table-cell py-3.5">
                     {m.lastResponseTimeMs ? (
                       <span
                         className={cn(
-                          "text-xs font-mono font-medium px-2 py-0.5 rounded-full inline-block",
+                          "text-xs font-mono font-bold px-2 py-0.5 rounded-full inline-block border",
                           m.lastResponseTimeMs < 200
-                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                            ? "bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/20"
                             : m.lastResponseTimeMs < 600
-                            ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                            : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                            ? "bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/20"
+                            : "bg-rose-500/15 text-rose-800 dark:text-rose-300 border-rose-500/20"
                         )}
                       >
                         {m.lastResponseTimeMs} ms
@@ -336,10 +336,10 @@ export function MonitorListTable() {
                       <span className="text-xs text-muted-foreground font-mono">—</span>
                     )}
                   </TableCell>
-                  <TableCell className="hidden sm:table-cell text-xs text-muted-foreground font-mono py-3">
+                  <TableCell className="hidden sm:table-cell text-xs text-muted-foreground font-mono py-3.5">
                     {m.lastCheckedAt ? new Date(m.lastCheckedAt).toLocaleTimeString() : "Pending"}
                   </TableCell>
-                  <TableCell className="text-right py-3">
+                  <TableCell className="text-right py-3.5">
                     <DropdownMenu>
                       <DropdownMenuTrigger
                         render={

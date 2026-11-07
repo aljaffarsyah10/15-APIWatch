@@ -38,7 +38,7 @@ export function AppHeader() {
     : undefined;
 
   return (
-    <header className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b border-border/80 bg-background/80 px-4 sm:px-6 backdrop-blur-md">
+    <header className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b border-border/80 bg-background/85 px-4 sm:px-6 backdrop-blur-md shadow-2xs">
       {/* Left: Mobile Drawer & Breadcrumb */}
       <div className="flex items-center gap-3">
         {/* Mobile Hamburger Drawer */}
@@ -64,19 +64,21 @@ export function AppHeader() {
         {/* Brand for Mobile when sidebar is closed */}
         <Link
           href="/dashboard"
-          className="flex md:hidden items-center gap-1.5 font-bold tracking-tight text-sm"
+          className="flex md:hidden items-center gap-2 font-bold tracking-tight text-sm"
         >
-          <Activity className="h-4 w-4 text-blue-600" />
+          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-blue-600 text-white shadow-2xs">
+            <Activity className="h-3.5 w-3.5" />
+          </div>
           <span>APIWatch</span>
         </Link>
 
         {/* Desktop Breadcrumb / Title */}
-        <div className="hidden md:flex items-center gap-2 text-sm font-medium">
+        <div className="hidden md:flex items-center gap-2 text-xs font-medium">
           <span className="text-muted-foreground/80 hover:text-foreground transition-colors">
             Workspace
           </span>
-          <span className="text-muted-foreground/40 font-mono text-xs">/</span>
-          <span className="font-semibold text-foreground tracking-tight">
+          <span className="text-muted-foreground/40 font-mono">/</span>
+          <span className="font-bold text-foreground tracking-tight text-sm">
             {getPageTitle()}
           </span>
         </div>
@@ -86,7 +88,7 @@ export function AppHeader() {
       <div className="flex items-center gap-2 sm:gap-3">
         <Badge
           variant="outline"
-          className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs text-emerald-600 dark:text-emerald-400 border-emerald-500/20 bg-emerald-500/10 font-medium rounded-full"
+          className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 text-xs text-emerald-700 dark:text-emerald-300 border-emerald-500/30 bg-gradient-to-r from-emerald-500/15 to-teal-500/10 font-bold rounded-full shadow-2xs"
         >
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
           Engine Online
@@ -94,7 +96,7 @@ export function AppHeader() {
 
         <ThemeToggle />
 
-        <div className="h-4 w-px bg-border/60 mx-0.5" />
+        <div className="h-4 w-px bg-border/80 mx-0.5" />
 
         <UserNav user={user} />
       </div>

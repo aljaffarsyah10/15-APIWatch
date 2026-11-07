@@ -76,24 +76,24 @@ export function AppSidebar({ className, onNavigate }: AppSidebarProps) {
   return (
     <aside
       className={cn(
-        "flex h-full w-64 flex-col justify-between border-r bg-card/60 backdrop-blur-sm px-3.5 py-5 text-card-foreground",
+        "flex h-full w-64 flex-col justify-between border-r border-border/80 bg-sidebar/80 backdrop-blur-md px-3.5 py-5 text-sidebar-foreground",
         className
       )}
     >
       <div className="space-y-6">
-        {/* Brand Header */}
+        {/* Brand Header with Gradient Logo Icon */}
         <Link
           href="/dashboard"
           onClick={onNavigate}
-          className="flex items-center gap-2.5 px-2 py-1 group transition-opacity hover:opacity-90"
+          className="flex items-center gap-2.5 px-2 py-1 group transition-opacity hover:opacity-95"
         >
-          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-600 text-white shadow-sm ring-1 ring-blue-500/30">
-            <Activity className="h-4 w-4 transition-transform group-hover:scale-110" />
+          <div className="flex h-8.5 w-8.5 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 via-indigo-600 to-blue-700 text-white shadow-sm ring-1 ring-blue-500/30 group-hover:scale-105 transition-transform duration-200">
+            <Activity className="h-4.5 w-4.5 transition-transform group-hover:scale-110" />
           </div>
           <div className="flex flex-col">
-            <span className="text-base font-bold tracking-tight text-foreground flex items-center gap-1.5">
+            <span className="text-base font-extrabold tracking-tight text-foreground flex items-center gap-1.5">
               APIWatch
-              <span className="text-[10px] px-1.5 py-0.2 rounded-full font-mono bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold border border-blue-500/20">
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full font-mono bg-gradient-to-r from-blue-500/15 to-indigo-500/15 text-blue-700 dark:text-blue-300 font-bold border border-blue-500/20">
                 PRO
               </span>
             </span>
@@ -107,7 +107,7 @@ export function AppSidebar({ className, onNavigate }: AppSidebarProps) {
         <div className="space-y-5">
           {navigationSections.map((section) => (
             <div key={section.title} className="space-y-1">
-              <p className="px-2.5 text-[11px] font-semibold tracking-wider text-muted-foreground/70 uppercase">
+              <p className="px-2.5 text-[11px] font-bold tracking-wider text-muted-foreground/80 uppercase">
                 {section.title}
               </p>
               <nav className="space-y-0.5">
@@ -128,10 +128,10 @@ export function AppSidebar({ className, onNavigate }: AppSidebarProps) {
                       onClick={onNavigate}
                       target={item.external ? "_blank" : undefined}
                       className={cn(
-                        "group flex items-center justify-between rounded-md px-2.5 py-1.5 text-sm font-medium transition-all duration-150",
+                        "group flex items-center justify-between rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all duration-150",
                         isActive
-                          ? "bg-secondary text-foreground font-semibold shadow-2xs"
-                          : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+                          ? "bg-gradient-to-r from-blue-500/15 to-indigo-500/10 text-blue-700 dark:text-blue-300 font-semibold shadow-2xs border-l-2 border-blue-600 pl-2"
+                          : "text-muted-foreground hover:bg-muted/70 hover:text-foreground hover:translate-x-0.5"
                       )}
                     >
                       <div className="flex items-center gap-2.5">
@@ -157,20 +157,20 @@ export function AppSidebar({ className, onNavigate }: AppSidebarProps) {
         </div>
       </div>
 
-      {/* Bottom Status Panel */}
-      <div className="rounded-lg border border-border/80 bg-muted/30 p-3 space-y-2">
+      {/* Bottom Status Panel with Gradient Highlight */}
+      <div className="rounded-xl border border-border/80 bg-gradient-to-b from-card to-muted/40 p-3.5 space-y-2 shadow-2xs">
         <div className="flex items-center justify-between text-xs">
-          <span className="text-muted-foreground font-medium">Scheduler</span>
+          <span className="text-muted-foreground font-semibold">Scheduler</span>
           <Badge
             variant="outline"
-            className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20 py-0 px-1.5 font-medium flex items-center gap-1"
+            className="text-[10px] bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30 py-0 px-2 font-bold flex items-center gap-1.5 rounded-full"
           >
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
             Healthy
           </Badge>
         </div>
-        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
-          <ShieldCheck className="h-3.5 w-3.5 text-blue-500 shrink-0" />
+        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium">
+          <ShieldCheck className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
           <span>SSRF Shield Active</span>
         </div>
       </div>

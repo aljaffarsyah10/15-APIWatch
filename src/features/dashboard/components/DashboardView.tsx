@@ -16,7 +16,7 @@ import {
   Zap,
 } from "lucide-react";
 import { toast } from "sonner";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -150,7 +150,7 @@ export function DashboardView() {
         >
           <Link
             href="/monitors/new"
-            className={cn(buttonVariants(), "gap-2 shadow-sm")}
+            className="inline-flex items-center justify-center gap-2 h-9 px-4 rounded-md text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-sm transition-all duration-200 active:scale-95"
           >
             <PlusCircle className="h-4 w-4" />
             Add Monitor
@@ -182,7 +182,7 @@ export function DashboardView() {
             size="sm"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="gap-1.5 h-8.5"
+            className="gap-1.5 h-8.5 bg-card/80 hover:bg-card transition-all"
           >
             <RefreshCw
               className={cn("h-3.5 w-3.5 text-muted-foreground", isRefreshing && "animate-spin text-primary")}
@@ -191,7 +191,7 @@ export function DashboardView() {
           </Button>
           <Link
             href="/monitors/new"
-            className={cn(buttonVariants({ size: "sm" }), "gap-1.5 h-8.5 shadow-2xs")}
+            className="inline-flex items-center justify-center gap-1.5 h-8.5 px-3.5 rounded-md text-xs font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-sm transition-all duration-200 active:scale-95"
           >
             <PlusCircle className="h-3.5 w-3.5" />
             Add Monitor
@@ -199,97 +199,97 @@ export function DashboardView() {
         </div>
       </PageHeader>
 
-      {/* Health Status Banner */}
+      {/* Health Status Banner with Ambient Gradient */}
       <div
         className={cn(
-          "flex items-center justify-between p-3.5 px-4.5 rounded-lg border transition-all",
+          "flex items-center justify-between p-4 px-5 rounded-xl border transition-all duration-200 shadow-xs",
           isAllHealthy
-            ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-800 dark:text-emerald-300"
-            : "bg-rose-500/5 border-rose-500/20 text-rose-800 dark:text-rose-300"
+            ? "bg-gradient-to-r from-emerald-500/10 via-emerald-500/5 to-teal-500/10 border-emerald-500/30 text-emerald-950 dark:text-emerald-200"
+            : "bg-gradient-to-r from-rose-500/10 via-rose-500/5 to-amber-500/10 border-rose-500/30 text-rose-950 dark:text-rose-200"
         )}
       >
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3.5">
           {isAllHealthy ? (
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-              <CheckCircle2 className="h-4 w-4" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 ring-2 ring-emerald-500/20 animate-pulse-subtle">
+              <CheckCircle2 className="h-4.5 w-4.5" />
             </div>
           ) : (
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400">
-              <AlertTriangle className="h-4 w-4 animate-pulse" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-rose-500/20 text-rose-600 dark:text-rose-400 ring-2 ring-rose-500/20 animate-pulse">
+              <AlertTriangle className="h-4.5 w-4.5" />
             </div>
           )}
           <div>
-            <p className="text-sm font-semibold">
+            <p className="text-sm font-bold text-foreground">
               {isAllHealthy ? "All Monitored Endpoints Operational" : `${activeIncidents.length} Service Incident Detected`}
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-muted-foreground mt-0.5">
               {isAllHealthy
-                ? "Background monitoring engine is polling all registered endpoints within threshold parameters."
+                ? "Background monitoring engine is probing all endpoints with zero assertion failures."
                 : "One or more HTTP endpoints failed consecutive health assertions."}
             </p>
           </div>
         </div>
-        <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
-          <ShieldCheck className="h-4 w-4 text-blue-500" />
-          <span>Zero False Positive Filter</span>
+        <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground font-mono bg-card/60 px-2.5 py-1 rounded-md border border-border/60">
+          <ShieldCheck className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          <span>SSRF Shield Active</span>
         </div>
       </div>
 
-      {/* Top 4 Summary KPI Cards */}
+      {/* Top 4 Summary KPI Cards with Subtle Light Tints & Elevated Hover */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {/* Card 1: Total Monitors */}
-        <Card className="hover:border-border transition-all">
+        <Card className="bg-gradient-to-br from-blue-500/8 via-card to-card border-border/80 card-elevated">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Monitors
             </CardTitle>
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400">
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-500/15 text-blue-600 dark:text-blue-400 shadow-2xs">
               <Activity className="h-4 w-4" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold tracking-tight font-mono text-foreground">
+            <div className="text-3xl font-extrabold tracking-tight font-mono text-foreground">
               {summary?.totalMonitors ?? 0}
             </div>
-            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-              <span className="font-medium text-foreground">{summary?.upMonitors ?? 0} active</span>
+            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1 font-medium">
+              <span className="text-blue-700 dark:text-blue-300 font-semibold">{summary?.upMonitors ?? 0} active</span>
               <span>·</span>
-              <span>{(summary?.totalMonitors ?? 0) - (summary?.upMonitors ?? 0)} inactive/paused</span>
+              <span>{(summary?.totalMonitors ?? 0) - (summary?.upMonitors ?? 0)} paused</span>
             </p>
           </CardContent>
         </Card>
 
         {/* Card 2: 24h Overall Uptime */}
-        <Card className="hover:border-border transition-all">
+        <Card className="bg-gradient-to-br from-emerald-500/8 via-card to-card border-border/80 card-elevated">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Overall Uptime
             </CardTitle>
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 shadow-2xs">
               <CheckCircle2 className="h-4 w-4" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold tracking-tight font-mono text-emerald-600 dark:text-emerald-400">
+            <div className="text-3xl font-extrabold tracking-tight font-mono text-emerald-600 dark:text-emerald-400">
               {summary?.overallUptime ?? 100}%
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              Rolling 24-hour target: 99.90%
+            <p className="text-xs text-muted-foreground mt-1 font-medium">
+              Target SLA: 99.90%
             </p>
           </CardContent>
         </Card>
 
         {/* Card 3: Down Incidents */}
-        <Card className="hover:border-border transition-all">
+        <Card className="bg-gradient-to-br from-rose-500/8 via-card to-card border-border/80 card-elevated">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Incidents
             </CardTitle>
             <div
               className={cn(
-                "flex h-7 w-7 items-center justify-center rounded-md",
+                "flex h-7 w-7 items-center justify-center rounded-md shadow-2xs",
                 (summary?.downMonitors ?? 0) > 0
-                  ? "bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                  ? "bg-rose-500/20 text-rose-600 dark:text-rose-400"
                   : "bg-muted text-muted-foreground"
               )}
             >
@@ -299,7 +299,7 @@ export function DashboardView() {
           <CardContent>
             <div
               className={cn(
-                "text-3xl font-bold tracking-tight font-mono",
+                "text-3xl font-extrabold tracking-tight font-mono",
                 (summary?.downMonitors ?? 0) > 0
                   ? "text-rose-600 dark:text-rose-400"
                   : "text-foreground"
@@ -307,32 +307,32 @@ export function DashboardView() {
             >
               {summary?.downMonitors ?? 0}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1 font-medium">
               {(summary?.activeIncidentsCount ?? 0) === 0
-                ? "No active outages detected"
+                ? "Zero active outages detected"
                 : `${summary?.activeIncidentsCount} alerts dispatched`}
             </p>
           </CardContent>
         </Card>
 
         {/* Card 4: Avg Response Latency */}
-        <Card className="hover:border-border transition-all">
+        <Card className="bg-gradient-to-br from-indigo-500/8 via-card to-card border-border/80 card-elevated">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            <CardTitle className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
               Avg Latency
             </CardTitle>
-            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400">
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 shadow-2xs">
               <Clock className="h-4 w-4" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold tracking-tight font-mono text-foreground">
+            <div className="text-3xl font-extrabold tracking-tight font-mono text-foreground">
               {summary?.avgResponseTimeMs ?? 0}
               <span className="text-base font-normal text-muted-foreground ml-1">ms</span>
             </div>
-            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-              <TrendingDown className="h-3.5 w-3.5 text-emerald-500" />
-              <span>Monotonic clock measurement</span>
+            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1 font-medium">
+              <TrendingDown className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
+              <span>Monotonic clock</span>
             </p>
           </CardContent>
         </Card>
@@ -342,24 +342,24 @@ export function DashboardView() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left 2 Cols: Response Time Chart */}
         <div className="lg:col-span-2 space-y-6">
-          <Card>
-            <CardHeader className="border-b border-border/60 pb-3">
+          <Card className="card-elevated border-border/80">
+            <CardHeader className="border-b border-border/60 pb-3 bg-muted/20">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="text-base font-semibold text-foreground">
+                  <CardTitle className="text-base font-bold text-foreground">
                     Response Latency Distribution
                   </CardTitle>
                   <CardDescription className="text-xs text-muted-foreground mt-0.5">
-                    Continuous latency metrics across active worker probes
+                    Continuous latency telemetry across active worker probes
                   </CardDescription>
                 </div>
-                <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
-                  <span className="inline-block h-2 w-2 rounded-full bg-blue-500" />
-                  <span>Mean Latency</span>
+                <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground bg-card px-2.5 py-1 rounded-md border border-border/60">
+                  <span className="inline-block h-2 w-2 rounded-full bg-blue-600 animate-pulse" />
+                  <span className="font-semibold text-foreground">Mean Latency</span>
                 </div>
               </div>
             </CardHeader>
-            <CardContent className="pt-4">
+            <CardContent className="pt-5">
               <ResponseTimeChart data={chartData} />
             </CardContent>
           </Card>
@@ -367,14 +367,14 @@ export function DashboardView() {
 
         {/* Right Col: Active Incidents */}
         <div>
-          <Card className="h-full flex flex-col justify-between">
+          <Card className="h-full flex flex-col justify-between card-elevated border-border/80">
             <div>
-              <CardHeader className="border-b border-border/60 pb-3">
+              <CardHeader className="border-b border-border/60 pb-3 bg-muted/20">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-base font-semibold text-foreground">
+                  <CardTitle className="text-base font-bold text-foreground">
                     Active Incidents
                   </CardTitle>
-                  <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
+                  <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground font-semibold">
                     {activeIncidents.length} active
                   </span>
                 </div>
@@ -385,10 +385,10 @@ export function DashboardView() {
               <CardContent className="pt-4 space-y-3">
                 {activeIncidents.length === 0 ? (
                   <div className="flex flex-col items-center justify-center p-8 text-center rounded-lg border border-dashed border-border/80 bg-muted/20">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mb-2">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 mb-2 animate-pulse-subtle">
                       <Zap className="h-5 w-5" />
                     </div>
-                    <p className="text-sm font-semibold text-foreground">All Systems Healthy</p>
+                    <p className="text-sm font-bold text-foreground">All Systems Healthy</p>
                     <p className="text-xs text-muted-foreground mt-1 max-w-[200px]">
                       Zero unresolved incidents or outage alerts detected.
                     </p>
@@ -397,16 +397,16 @@ export function DashboardView() {
                   activeIncidents.map((incident) => (
                     <div
                       key={incident.id}
-                      className="flex items-start justify-between p-3 rounded-lg border bg-rose-500/5 border-rose-500/20"
+                      className="flex items-start justify-between p-3 rounded-lg border bg-rose-500/8 border-rose-500/20"
                     >
                       <div className="space-y-1 min-w-0 pr-2">
-                        <p className="text-sm font-medium text-foreground truncate">
+                        <p className="text-sm font-semibold text-foreground truncate">
                           {incident.name}
                         </p>
                         <p className="text-xs text-muted-foreground font-mono truncate">
                           {incident.url}
                         </p>
-                        <p className="text-[11px] text-rose-600 dark:text-rose-400">
+                        <p className="text-[11px] text-rose-600 dark:text-rose-400 font-medium">
                           Last checked: {incident.lastCheckedAt ? new Date(incident.lastCheckedAt).toLocaleTimeString() : "Pending"}
                         </p>
                       </div>
@@ -420,10 +420,10 @@ export function DashboardView() {
             <div className="p-4 pt-0">
               <Link
                 href="/monitors"
-                className="flex items-center justify-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-500 transition-colors py-2 border-t border-border/60"
+                className="flex items-center justify-center gap-1.5 text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 transition-colors py-2 border-t border-border/60"
               >
                 <span>View all configured monitors</span>
-                <ArrowRight className="h-3 w-3" />
+                <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
           </Card>

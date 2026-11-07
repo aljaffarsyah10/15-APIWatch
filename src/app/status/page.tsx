@@ -20,22 +20,22 @@ export const metadata: Metadata = {
 
 export default function PublicStatusPage() {
   return (
-    <div className="min-h-screen bg-background flex flex-col selection:bg-blue-500/20 selection:text-blue-500">
+    <div className="min-h-screen bg-background flex flex-col selection:bg-blue-500/20 selection:text-blue-600">
       {/* Top Banner Header */}
-      <header className="border-b border-border/80 bg-background/80 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+      <header className="border-b border-border/80 bg-background/85 backdrop-blur-md sticky top-0 z-40 shadow-2xs">
+        <div className="max-w-4xl mx-auto px-4 py-3.5 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-600 text-white shadow-sm ring-1 ring-blue-500/30 group-hover:scale-105 transition-transform">
-              <Activity className="h-4 w-4" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-sm ring-1 ring-blue-500/30 group-hover:scale-105 transition-transform duration-200">
+              <Activity className="h-4.5 w-4.5" />
             </div>
-            <span className="font-bold text-base tracking-tight text-foreground">APIWatch Status</span>
+            <span className="font-extrabold text-base tracking-tight text-foreground">APIWatch Status</span>
           </Link>
 
           <div className="flex items-center gap-3">
             <ThemeToggle />
             <Link
               href="/"
-              className="text-xs font-medium text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors"
+              className="text-xs font-semibold text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors bg-card px-2.5 py-1 rounded-md border border-border/60 shadow-2xs"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
               <span>Back to Home</span>
@@ -54,7 +54,7 @@ export default function PublicStatusPage() {
         <footer className="text-center text-xs text-muted-foreground pt-8 border-t border-border/60">
           <p>
             Powered by{" "}
-            <Link href="/" className="font-semibold text-foreground hover:underline">
+            <Link href="/" className="font-bold text-foreground hover:underline">
               APIWatch
             </Link>{" "}
             — High-concurrency API monitoring &amp; automated incident detection.
@@ -105,17 +105,19 @@ async function StatusContent() {
 
   return (
     <div className="space-y-6">
-      {/* Overall Status Banner */}
+      {/* Overall Status Banner with Ambient Glow */}
       <div
-        className={`p-6 rounded-xl border flex items-center gap-4 transition-all shadow-2xs ${
+        className={`p-6 rounded-2xl border flex items-center gap-4 transition-all shadow-xs ${
           isAllOperational
-            ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-900 dark:text-emerald-200"
-            : "bg-rose-500/5 border-rose-500/20 text-rose-900 dark:text-rose-200"
+            ? "bg-gradient-to-r from-emerald-500/15 via-emerald-500/10 to-teal-500/10 border-emerald-500/30 text-emerald-950 dark:text-emerald-200"
+            : "bg-gradient-to-r from-rose-500/15 via-rose-500/10 to-amber-500/10 border-rose-500/30 text-rose-950 dark:text-rose-200"
         }`}
       >
         <div
-          className={`flex h-12 w-12 items-center justify-center rounded-full shrink-0 ${
-            isAllOperational ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
+          className={`flex h-12 w-12 items-center justify-center rounded-full shrink-0 shadow-2xs ${
+            isAllOperational
+              ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 ring-2 ring-emerald-500/25 animate-pulse-subtle"
+              : "bg-rose-500/20 text-rose-600 dark:text-rose-400 ring-2 ring-rose-500/25 animate-pulse"
           }`}
         >
           {isAllOperational ? (
@@ -125,51 +127,51 @@ async function StatusContent() {
           )}
         </div>
         <div>
-          <h1 className="text-xl font-bold tracking-tight">
+          <h1 className="text-xl font-extrabold tracking-tight text-foreground">
             {isAllOperational
               ? "All Systems Fully Operational"
               : `${downCount} Monitored Service${downCount > 1 ? "s" : ""} Experiencing Issues`}
           </h1>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-muted-foreground mt-1 font-medium">
             {isAllOperational
               ? "All monitored services and external endpoints are responding within acceptable latency thresholds."
-              : "Our automated monitoring engine detected anomalies in some endpoints. Engineers are investigating."}
+              : "Our automated monitoring engine detected anomalies in some endpoints. Automated alerts have been dispatched."}
           </p>
         </div>
       </div>
 
       {/* Services List Card */}
-      <Card>
-        <CardHeader className="border-b border-border/60 pb-3">
+      <Card className="card-elevated border-border/80 shadow-xs">
+        <CardHeader className="border-b border-border/60 pb-3.5 bg-muted/20">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-base font-semibold">Monitored Services</CardTitle>
-              <CardDescription className="text-xs mt-0.5">
+              <CardTitle className="text-base font-bold text-foreground">Monitored Services</CardTitle>
+              <CardDescription className="text-xs text-muted-foreground mt-0.5">
                 Current availability and live operational state
               </CardDescription>
             </div>
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              <span>Live Telemetry</span>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono bg-card px-2.5 py-1 rounded-md border border-border/60 shadow-2xs">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="font-semibold text-foreground">Live Telemetry</span>
             </div>
           </div>
         </CardHeader>
         <CardContent className="pt-2 divide-y divide-border/60">
           {monitors.length === 0 ? (
-            <div className="p-8 text-center text-sm text-muted-foreground">
+            <div className="p-8 text-center text-xs text-muted-foreground font-medium">
               No public monitors active at this time.
             </div>
           ) : (
             monitors.map((m) => (
-              <div key={m.id} className="py-3.5 flex items-center justify-between">
+              <div key={m.id} className="py-3.5 px-1 flex items-center justify-between hover:bg-muted/30 transition-colors rounded-lg">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-[10px] font-mono px-1.5 py-0.2 rounded border bg-secondary text-secondary-foreground uppercase">
+                    <span className="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded border bg-secondary text-secondary-foreground uppercase shadow-2xs">
                       {m.method}
                     </span>
-                    <span className="text-sm font-semibold text-foreground">{m.name}</span>
+                    <span className="text-sm font-bold text-foreground">{m.name}</span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground font-mono">
+                  <p className="text-[11px] text-muted-foreground font-mono font-medium">
                     Last probe: {m.lastCheckedAt ? new Date(m.lastCheckedAt).toLocaleTimeString() : "Pending"}
                   </p>
                 </div>
@@ -177,7 +179,7 @@ async function StatusContent() {
                   {m.status === "UP" ? (
                     <Badge
                       variant="outline"
-                      className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20 font-medium px-2 py-0.5 rounded-full text-xs flex items-center gap-1.5"
+                      className="bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border-emerald-500/30 font-bold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5 shadow-2xs"
                     >
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
                       <span>Operational</span>
@@ -185,7 +187,7 @@ async function StatusContent() {
                   ) : m.status === "DOWN" ? (
                     <Badge
                       variant="outline"
-                      className="bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20 font-medium px-2 py-0.5 rounded-full text-xs flex items-center gap-1.5"
+                      className="bg-rose-500/15 text-rose-800 dark:text-rose-300 border-rose-500/30 font-bold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5 shadow-2xs"
                     >
                       <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse shrink-0" />
                       <span>Service Disruption</span>
@@ -193,7 +195,7 @@ async function StatusContent() {
                   ) : (
                     <Badge
                       variant="outline"
-                      className="bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 font-medium px-2 py-0.5 rounded-full text-xs flex items-center gap-1.5"
+                      className="bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30 font-bold px-2.5 py-0.5 rounded-full text-xs flex items-center gap-1.5 shadow-2xs"
                     >
                       <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
                       <span>Paused / Maintenance</span>
