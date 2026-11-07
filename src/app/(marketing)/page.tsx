@@ -4,7 +4,6 @@ import {
   ArrowRight,
   Bell,
   CheckCircle2,
-  Clock,
   Radio,
   ShieldCheck,
   Zap,
@@ -12,7 +11,6 @@ import {
   ChevronRight,
   Check,
   X,
-  ExternalLink,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -21,19 +19,32 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { InteractiveConsoleDemo } from "@/features/marketing/components/InteractiveConsoleDemo";
+import { InteractiveAssertionTester } from "@/features/marketing/components/InteractiveAssertionTester";
+import { FaqAccordion } from "@/features/marketing/components/FaqAccordion";
 
 export default function HomePage() {
   return (
     <div className="flex flex-col relative overflow-hidden selection:bg-blue-500/20 selection:text-blue-600">
-      {/* Dynamic Ambient Background Glows & Grid Pattern */}
+      {/* Dynamic Animated Ambient Background Orbs & Tech Grid */}
       <div
         aria-hidden="true"
         className="fixed inset-0 pointer-events-none overflow-hidden -z-10"
       >
-        <div className="absolute -top-40 -left-20 h-[500px] w-[500px] rounded-full bg-gradient-to-br from-indigo-500/20 via-blue-500/15 to-transparent blur-3xl dark:from-blue-600/15 dark:via-indigo-900/15 animate-pulse-subtle" />
-        <div className="absolute top-1/4 -right-24 h-[550px] w-[550px] rounded-full bg-gradient-to-bl from-sky-400/20 via-teal-400/15 to-transparent blur-3xl dark:from-sky-700/12 dark:via-emerald-950/15" />
-        <div className="absolute top-2/3 left-1/4 h-[450px] w-[450px] rounded-full bg-gradient-to-tr from-purple-400/15 via-pink-400/10 to-transparent blur-3xl dark:from-purple-900/10 dark:via-blue-950/15" />
-        <div className="absolute inset-0 bg-tech-grid [mask-image:radial-gradient(ellipse_75%_55%_at_50%_0%,#000_70%,transparent_100%)] opacity-35 dark:opacity-20" />
+        {/* Animated Blob 1: Top-Left Indigo/Blue Flow */}
+        <div className="absolute -top-40 -left-20 h-[520px] w-[520px] rounded-full bg-gradient-to-br from-indigo-500/22 via-blue-500/18 to-transparent blur-3xl dark:from-blue-600/18 dark:via-indigo-900/18 animate-blob-1" />
+
+        {/* Animated Blob 2: Top-Right Radiant Sky/Cyan Orbit */}
+        <div className="absolute top-1/4 -right-28 h-[580px] w-[580px] rounded-full bg-gradient-to-bl from-sky-400/22 via-teal-400/18 to-transparent blur-3xl dark:from-sky-700/15 dark:via-emerald-950/18 animate-blob-2" />
+
+        {/* Animated Blob 3: Bottom-Center Aurora Warmth & Emerald Tone */}
+        <div className="absolute top-2/3 left-1/5 h-[480px] w-[480px] rounded-full bg-gradient-to-tr from-purple-400/18 via-pink-400/12 to-emerald-400/10 blur-3xl dark:from-purple-900/12 dark:via-blue-950/15 animate-blob-3" />
+
+        {/* Ambient Shimmering Light Ray */}
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/5 to-transparent blur-2xl animate-shimmer-ray pointer-events-none" />
+
+        {/* High-Precision Architectural Tech Grid Overlay */}
+        <div className="absolute inset-0 bg-tech-grid [mask-image:radial-gradient(ellipse_75%_55%_at_50%_0%,#000_75%,transparent_100%)] opacity-35 dark:opacity-20" />
       </div>
 
       {/* Hero Section */}
@@ -100,136 +111,8 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Showstopper: Live Interactive Telemetry Console Mockup */}
-          <div className="mt-14 mx-auto max-w-4xl relative">
-            {/* Ambient Backlight Glow behind Mockup */}
-            <div className="absolute -inset-1.5 rounded-3xl bg-gradient-to-r from-blue-600/30 via-indigo-600/25 to-teal-500/30 blur-xl opacity-70 group-hover:opacity-100 transition-opacity" />
-
-            <div className="relative rounded-2xl border border-border/80 bg-card/95 backdrop-blur-xl shadow-2xl overflow-hidden card-elevated">
-              {/* Top Accent Gradient Hairline */}
-              <div className="h-[3px] w-full bg-gradient-to-r from-blue-500 via-indigo-500 to-teal-400" />
-
-              {/* Console Header Bar */}
-              <div className="flex items-center justify-between border-b border-border/70 px-4 py-3 bg-muted/40">
-                <div className="flex items-center gap-2">
-                  <span className="h-3 w-3 rounded-full bg-rose-500/80" />
-                  <span className="h-3 w-3 rounded-full bg-amber-500/80" />
-                  <span className="h-3 w-3 rounded-full bg-emerald-500/80" />
-                  <span className="ml-2 font-mono text-xs font-semibold text-foreground/80 flex items-center gap-1.5">
-                    apiwatch.telemetry.daemon // live-stream
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    variant="outline"
-                    className="text-emerald-700 dark:text-emerald-300 border-emerald-500/30 bg-emerald-500/10 text-[11px] font-mono py-0 font-bold gap-1"
-                  >
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping" />
-                    All Probes Operational
-                  </Badge>
-                </div>
-              </div>
-
-              {/* Active Probe Real-time Feed Row */}
-              <div className="p-5 sm:p-6 space-y-5">
-                <div className="rounded-xl border border-border/70 bg-background/80 p-3.5 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs">
-                  <div className="flex items-center gap-3">
-                    <span className="px-2.5 py-1 rounded-md text-[11px] font-mono font-bold bg-blue-500/15 text-blue-700 dark:text-blue-300 border border-blue-500/20">
-                      GET
-                    </span>
-                    <div>
-                      <div className="font-mono text-xs sm:text-sm font-semibold text-foreground flex items-center gap-1.5">
-                        https://api.stripe.com/v1/health
-                        <ExternalLink className="h-3 w-3 text-muted-foreground" />
-                      </div>
-                      <div className="text-[11px] text-muted-foreground font-mono flex items-center gap-2 mt-0.5">
-                        <span>Cluster: worker-us-east-1</span>
-                        <span>·</span>
-                        <span>Interval: 30s</span>
-                        <span>·</span>
-                        <span className="text-emerald-600 dark:text-emerald-400 font-semibold">TLS 1.3 Valid</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 sm:gap-3 self-end sm:self-center">
-                    <div className="text-right">
-                      <div className="text-xs font-bold font-mono text-emerald-600 dark:text-emerald-400 flex items-center gap-1 justify-end">
-                        <CheckCircle2 className="h-3.5 w-3.5" />
-                        200 OK
-                      </div>
-                      <div className="text-[10px] text-muted-foreground font-mono">monotonic: 78ms</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 30-Day Uptime Bar Visualization */}
-                <div className="space-y-2 rounded-xl border border-border/70 bg-background/50 p-3.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-foreground">30-Day Rolling Uptime Ratio</span>
-                    <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">100.0% Uptime</span>
-                  </div>
-                  {/* Visual Bar of Ticks */}
-                  <div className="flex items-center gap-1 h-6 w-full pt-1">
-                    {Array.from({ length: 32 }).map((_, i) => (
-                      <div
-                        key={i}
-                        className="flex-1 h-5 rounded-xs bg-emerald-500 hover:bg-emerald-400 transition-colors cursor-pointer group relative"
-                        title={`Day ${i + 1}: 100% Availability`}
-                      />
-                    ))}
-                  </div>
-                  <div className="flex items-center justify-between text-[10px] text-muted-foreground font-mono pt-0.5">
-                    <span>30 days ago</span>
-                    <span>Continuous Probes</span>
-                    <span>Today</span>
-                  </div>
-                </div>
-
-                {/* 3 Vibrant Stat Cards */}
-                <div className="grid gap-3.5 sm:grid-cols-3 pt-1">
-                  <div className="rounded-xl border border-emerald-500/25 bg-gradient-to-br from-emerald-500/12 via-emerald-500/5 to-card p-4 shadow-2xs">
-                    <div className="flex items-center justify-between text-xs font-bold text-muted-foreground">
-                      <span>SYSTEM UPTIME</span>
-                      <Activity className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                    </div>
-                    <div className="mt-2 text-2xl font-extrabold font-mono text-emerald-600 dark:text-emerald-400">
-                      99.98%
-                    </div>
-                    <p className="mt-1 text-xs text-muted-foreground font-medium">
-                      Zero outage in 30 days
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border border-blue-500/25 bg-gradient-to-br from-blue-500/12 via-blue-500/5 to-card p-4 shadow-2xs">
-                    <div className="flex items-center justify-between text-xs font-bold text-muted-foreground">
-                      <span>AVG RESPONSE SPEED</span>
-                      <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div className="mt-2 text-2xl font-extrabold font-mono text-foreground">
-                      78ms
-                    </div>
-                    <p className="mt-1 text-xs text-muted-foreground font-medium">
-                      High-resolution monotonic timer
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border border-purple-500/25 bg-gradient-to-br from-purple-500/12 via-purple-500/5 to-card p-4 shadow-2xs">
-                    <div className="flex items-center justify-between text-xs font-bold text-muted-foreground">
-                      <span>SECURITY ENCLAVE</span>
-                      <ShieldCheck className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div className="mt-2 text-2xl font-extrabold font-mono text-foreground">
-                      AES-256-GCM
-                    </div>
-                    <p className="mt-1 text-xs text-muted-foreground font-medium">
-                      SSRF Guard &amp; Encrypted Keys
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Showstopper: Live Interactive Telemetry Console Mockup with Real-time UX */}
+          <InteractiveConsoleDemo />
         </div>
       </section>
 
@@ -360,8 +243,17 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Interactive UX Section: Rule Assertion Simulator */}
+      <section className="py-20 border-t border-border/80 bg-gradient-to-b from-card/30 via-background to-background">
+        <div className="container mx-auto px-4 sm:px-8">
+          <div className="max-w-4xl mx-auto">
+            <InteractiveAssertionTester />
+          </div>
+        </div>
+      </section>
+
       {/* 3-Step Architecture Pipeline */}
-      <section className="py-20 border-t border-border/80 bg-gradient-to-b from-card/40 via-background to-background">
+      <section className="py-20 border-t border-border/80 bg-background/50">
         <div className="container mx-auto px-4 sm:px-8">
           <div className="mx-auto max-w-3xl text-center mb-16">
             <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
@@ -374,7 +266,7 @@ export default function HomePage() {
 
           <div className="grid gap-8 md:grid-cols-3 max-w-5xl mx-auto">
             {/* Step 1 */}
-            <div className="relative rounded-2xl border border-border/80 bg-card/85 p-6 shadow-xs backdrop-blur-md space-y-4">
+            <div className="relative rounded-2xl border border-border/80 bg-card/85 p-6 shadow-xs backdrop-blur-md space-y-4 card-elevated">
               <div className="flex items-center gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600 text-white font-mono font-bold text-sm shadow-xs">
                   01
@@ -392,7 +284,7 @@ export default function HomePage() {
             </div>
 
             {/* Step 2 */}
-            <div className="relative rounded-2xl border border-border/80 bg-card/85 p-6 shadow-xs backdrop-blur-md space-y-4">
+            <div className="relative rounded-2xl border border-border/80 bg-card/85 p-6 shadow-xs backdrop-blur-md space-y-4 card-elevated">
               <div className="flex items-center gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-white font-mono font-bold text-sm shadow-xs">
                   02
@@ -410,7 +302,7 @@ export default function HomePage() {
             </div>
 
             {/* Step 3 */}
-            <div className="relative rounded-2xl border border-border/80 bg-card/85 p-6 shadow-xs backdrop-blur-md space-y-4">
+            <div className="relative rounded-2xl border border-border/80 bg-card/85 p-6 shadow-xs backdrop-blur-md space-y-4 card-elevated">
               <div className="flex items-center gap-3">
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-600 text-white font-mono font-bold text-sm shadow-xs">
                   03
@@ -504,16 +396,35 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* FAQ Section with Interactive Accordions */}
+      <section className="py-20 border-t border-border/80 bg-background/60">
+        <div className="container mx-auto px-4 sm:px-8">
+          <div className="mx-auto max-w-3xl text-center mb-14">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-500/20 mb-3">
+              KNOWLEDGE BASE
+            </div>
+            <h2 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
+              Frequently Asked Questions
+            </h2>
+            <p className="mt-3 text-base text-muted-foreground font-medium">
+              Everything you need to know about APIWatch security, scheduling, and reliability.
+            </p>
+          </div>
+
+          <FaqAccordion />
+        </div>
+      </section>
+
       {/* Vibrant High-Energy CTA Section */}
       <section className="py-20 border-t border-border/80 relative overflow-hidden">
         {/* Glow backdrop inside CTA */}
         <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-indigo-600/15 to-teal-500/10 pointer-events-none" />
 
         <div className="container mx-auto px-4 sm:px-8 text-center max-w-4xl relative">
-          <div className="rounded-3xl border border-blue-500/30 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 p-8 sm:p-14 text-white shadow-2xl relative overflow-hidden">
+          <div className="rounded-3xl border border-blue-500/30 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 p-8 sm:p-14 text-white shadow-2xl relative overflow-hidden card-elevated">
             {/* Ambient particles */}
-            <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-white/10 blur-2xl pointer-events-none" />
-            <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-teal-400/20 blur-2xl pointer-events-none" />
+            <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-white/10 blur-2xl pointer-events-none animate-pulse-subtle" />
+            <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-teal-400/20 blur-2xl pointer-events-none animate-pulse-subtle" />
 
             <h2 className="text-3xl font-extrabold tracking-tight sm:text-5xl leading-tight">
               Start Monitoring Your Critical APIs in 2 Minutes

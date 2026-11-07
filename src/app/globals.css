@@ -179,12 +179,54 @@
   50% { transform: translateY(-8px); }
 }
 
+@keyframes ambientDrift1 {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(35px, -45px) scale(1.12); }
+  66% { transform: translate(-25px, 25px) scale(0.95); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+@keyframes ambientDrift2 {
+  0% { transform: translate(0px, 0px) scale(1); }
+  33% { transform: translate(-45px, 35px) scale(1.08); }
+  66% { transform: translate(30px, -40px) scale(0.92); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+@keyframes ambientDrift3 {
+  0% { transform: translate(0px, 0px) scale(1); }
+  50% { transform: translate(50px, 40px) scale(1.15); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+@keyframes shimmerRay {
+  0% { opacity: 0.25; transform: rotate(-15deg) translateY(-8%); }
+  50% { opacity: 0.55; transform: rotate(-12deg) translateY(6%); }
+  100% { opacity: 0.25; transform: rotate(-15deg) translateY(-8%); }
+}
+
 .animate-pulse-subtle {
   animation: pulseSubtle 3s ease-in-out infinite;
 }
 
 .animate-float-slow {
   animation: floatSlow 6s ease-in-out infinite;
+}
+
+.animate-blob-1 {
+  animation: ambientDrift1 14s ease-in-out infinite;
+}
+
+.animate-blob-2 {
+  animation: ambientDrift2 18s ease-in-out infinite;
+}
+
+.animate-blob-3 {
+  animation: ambientDrift3 22s ease-in-out infinite;
+}
+
+.animate-shimmer-ray {
+  animation: shimmerRay 8s ease-in-out infinite;
 }
 
 .card-elevated {
