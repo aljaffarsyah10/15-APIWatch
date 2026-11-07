@@ -14,10 +14,12 @@ import {
 } from "@/components/ui/sheet";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { UserNav } from "@/components/layout/UserNav";
+import { useSession } from "@/lib/auth/auth-client";
 
 export function AppHeader() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   // Generate clean breadcrumb title
   const getPageTitle = () => {
@@ -29,6 +31,10 @@ export function AppHeader() {
     if (pathname === "/settings") return "Account Settings";
     return "APIWatch";
   };
+
+  const user = session?.user
+    ? { name: session.user.name, email: session.user.email }
+    : undefined;
 
   return (
     <header className="sticky top-0 z-40 flex h-14 w-full items-center justify-between border-b bg-background/80 px-4 sm:px-6 backdrop-blur-md">
@@ -81,7 +87,7 @@ export function AppHeader() {
           Engine Active
         </Badge>
 
-        <UserNav />
+        <UserNav user={user} />
       </div>
     </header>
   );

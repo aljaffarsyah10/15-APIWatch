@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ExternalLink,
@@ -8,6 +8,7 @@ import {
   Pause,
   Play,
   PlusCircle,
+  RefreshCw,
   Search,
   Trash2,
 } from "lucide-react";
@@ -33,43 +34,101 @@ import {
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { EmptyState } from "@/components/shared/EmptyState";
+import { ErrorState } from "@/components/shared/ErrorState";
+import { LoadingSkeleton } from "@/components/shared/LoadingSkeleton";
 import { PageHeader } from "@/components/shared/PageHeader";
-import { MOCK_MONITORS } from "../mocks";
+import { monitorApi } from "../api";
 import type { MonitorItem } from "../types";
+import { getErrorMessage } from "@/lib/api/error";
 import { cn } from "@/lib/utils";
 
 export function MonitorListTable() {
-  const [monitors, setMonitors] = useState<MonitorItem[]>(MOCK_MONITORS);
+  const [monitors, setMonitors] = useState<MonitorItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
 
-  const filteredMonitors = monitors.filter((m) => {
-    const matchesSearch =
-      m.name.toLowerCase().includes(search.toLowerCase()) ||
-      m.url.toLowerCase().includes(search.toLowerCase());
-    const matchesStatus =
-      statusFilter === "ALL" || m.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
-
-  const handleTogglePause = (id: string, currentStatus: string) => {
-    const nextStatus = currentStatus === "PAUSED" ? "UP" : "PAUSED";
-    setMonitors((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, status: nextStatus } : m))
-    );
-    toast.success(
-      nextStatus === "PAUSED" ? "Monitor paused" : "Monitor resumed",
-      {
-        description: `Status updated for monitor ${id} (Demo Mode)`,
-      }
-    );
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      const res = await monitorApi.list({
+        search: search || undefined,
+        status: statusFilter !== "ALL" ? statusFilter : undefined,
+      });
+      setMonitors(res.monitors);
+      setError(null);
+      toast.success("Monitors list refreshed");
+    } catch (err: unknown) {
+      toast.error("Failed to fetch monitors", {
+        description: getErrorMessage(err),
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
-  const handleDelete = (id: string, name: string) => {
-    setMonitors((prev) => prev.filter((m) => m.id !== id));
-    toast.success("Monitor deleted", {
-      description: `Removed "${name}" from monitoring queue`,
-    });
+  useEffect(() => {
+    let isMounted = true;
+
+    monitorApi
+      .list({
+        search: search || undefined,
+        status: statusFilter !== "ALL" ? statusFilter : undefined,
+      })
+      .then((res) => {
+        if (isMounted) {
+          setMonitors(res.monitors);
+          setError(null);
+          setIsLoading(false);
+        }
+      })
+      .catch((err: unknown) => {
+        if (isMounted) {
+          setError(getErrorMessage(err));
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [search, statusFilter]);
+
+  const handleTogglePause = async (id: string, currentStatus: string) => {
+    try {
+      if (currentStatus === "PAUSED") {
+        await monitorApi.resume(id);
+        toast.success("Monitor resumed", {
+          description: "Scheduled checks are now active again",
+        });
+      } else {
+        await monitorApi.pause(id);
+        toast.success("Monitor paused", {
+          description: "Scheduled checks have been temporarily suspended",
+        });
+      }
+      handleRefresh();
+    } catch (err: unknown) {
+      toast.error("Failed to update monitor status", {
+        description: getErrorMessage(err),
+      });
+    }
+  };
+
+  const handleDelete = async (id: string, name: string) => {
+    try {
+      await monitorApi.delete(id);
+      toast.success("Monitor deleted", {
+        description: `Removed "${name}" from monitoring queue`,
+      });
+      handleRefresh();
+    } catch (err: unknown) {
+      toast.error("Failed to delete monitor", {
+        description: getErrorMessage(err),
+      });
+    }
   };
 
   return (
@@ -78,13 +137,27 @@ export function MonitorListTable() {
         title="Monitors"
         description="Manage and monitor availability for all your production HTTP endpoints"
       >
-        <Link
-          href="/monitors/new"
-          className={cn(buttonVariants(), "gap-2")}
-        >
-          <PlusCircle className="h-4 w-4" />
-          Add Monitor
-        </Link>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="gap-1.5"
+          >
+            <RefreshCw
+              className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin")}
+            />
+            <span>Refresh</span>
+          </Button>
+          <Link
+            href="/monitors/new"
+            className={cn(buttonVariants({ size: "sm" }), "gap-2")}
+          >
+            <PlusCircle className="h-4 w-4" />
+            Add Monitor
+          </Link>
+        </div>
       </PageHeader>
 
       {/* Filter & Search Bar */}
@@ -98,149 +171,142 @@ export function MonitorListTable() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-          {["ALL", "UP", "DOWN", "PAUSED"].map((tab) => (
+
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+          {["ALL", "UP", "DOWN", "PAUSED"].map((status) => (
             <Button
-              key={tab}
-              variant={statusFilter === tab ? "default" : "outline"}
+              key={status}
+              variant={statusFilter === status ? "default" : "outline"}
               size="sm"
-              onClick={() => setStatusFilter(tab)}
-              className="text-xs h-8"
+              onClick={() => setStatusFilter(status)}
+              className="text-xs capitalize"
             >
-              {tab === "ALL" ? `All (${monitors.length})` : tab}
+              {status.toLowerCase()}
             </Button>
           ))}
         </div>
       </div>
 
-      {/* Empty State when filter yields 0 results */}
-      {filteredMonitors.length === 0 ? (
-        <EmptyState
-          title="No Matching Monitors"
-          description={
-            search
-              ? `No monitors matching "${search}". Try adjusting your keywords.`
-              : "No monitors found for this filter tab."
-          }
-          actionLabel="Clear Filters"
-          onAction={() => {
-            setSearch("");
-            setStatusFilter("ALL");
+      {/* Table Content */}
+      {isLoading ? (
+        <LoadingSkeleton type="table" count={5} />
+      ) : error ? (
+        <ErrorState
+          title="Failed to Load Monitors"
+          message={error}
+          onRetry={() => {
+            setIsLoading(true);
+            handleRefresh();
           }}
         />
+      ) : monitors.length === 0 ? (
+        <EmptyState
+          title={search || statusFilter !== "ALL" ? "No matching monitors found" : "No Monitors Configured Yet"}
+          description={
+            search || statusFilter !== "ALL"
+              ? "Try adjusting your search keywords or filter criteria."
+              : "Get started by adding your first endpoint monitor."
+          }
+          actionLabel={search || statusFilter !== "ALL" ? undefined : "Add Your First Monitor"}
+          onAction={search || statusFilter !== "ALL" ? undefined : () => {}}
+        />
       ) : (
-        <div className="rounded-xl border bg-card shadow-xs overflow-hidden">
+        <div className="rounded-md border bg-card">
           <Table>
             <TableHeader>
-              <TableRow className="bg-muted/30">
-                <TableHead className="w-[120px]">Status</TableHead>
-                <TableHead>Monitor / URL</TableHead>
-                <TableHead className="w-[90px]">Method</TableHead>
-                <TableHead className="w-[90px]">Interval</TableHead>
-                <TableHead className="w-[120px] text-right">Latency</TableHead>
-                <TableHead className="w-[120px] text-right">Checked</TableHead>
-                <TableHead className="w-[60px]"></TableHead>
+              <TableRow>
+                <TableHead>Monitor</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="hidden md:table-cell">Interval</TableHead>
+                <TableHead className="hidden lg:table-cell">Avg Latency</TableHead>
+                <TableHead className="hidden sm:table-cell">Last Checked</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredMonitors.map((m) => (
-                <TableRow
-                  key={m.id}
-                  className="hover:bg-muted/40 transition-colors"
-                >
+              {monitors.map((m) => (
+                <TableRow key={m.id}>
                   <TableCell>
-                    <StatusBadge status={m.status} />
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col min-w-0">
-                      <Link
-                        href={`/monitors/${m.id}`}
-                        className="font-medium text-sm hover:underline truncate"
-                      >
-                        {m.name}
-                      </Link>
-                      <span className="font-mono text-xs text-muted-foreground truncate">
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="text-[10px] uppercase font-mono px-1 py-0">
+                          {m.method}
+                        </Badge>
+                        <Link
+                          href={`/monitors/${m.id}`}
+                          className="font-medium hover:underline flex items-center gap-1"
+                        >
+                          {m.name}
+                          <ExternalLink className="h-3 w-3 text-muted-foreground opacity-50" />
+                        </Link>
+                      </div>
+                      <p className="text-xs text-muted-foreground font-mono truncate max-w-xs md:max-w-md">
                         {m.url}
-                      </span>
+                      </p>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className="font-mono text-xs">
-                      {m.method}
-                    </Badge>
+                    <StatusBadge status={m.status} />
                   </TableCell>
-                  <TableCell className="text-xs text-muted-foreground font-mono">
-                    {m.intervalSeconds}s
+                  <TableCell className="hidden md:table-cell text-xs text-muted-foreground">
+                    Every {m.intervalSeconds}s
                   </TableCell>
-                  <TableCell className="text-right font-mono text-sm font-semibold">
+                  <TableCell className="hidden lg:table-cell text-xs">
                     {m.lastResponseTimeMs ? `${m.lastResponseTimeMs} ms` : "—"}
                   </TableCell>
-                  <TableCell className="text-right text-xs text-muted-foreground">
-                    {m.lastCheckedAt}
+                  <TableCell className="hidden sm:table-cell text-xs text-muted-foreground">
+                    {m.lastCheckedAt ? new Date(m.lastCheckedAt).toLocaleTimeString() : "Pending"}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger
                         render={
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                          >
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                             <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Open menu</span>
                           </Button>
                         }
                       />
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
                           render={
-                            <Link
-                              href={`/monitors/${m.id}`}
-                              className="cursor-pointer flex items-center gap-2"
-                            />
+                            <Link href={`/monitors/${m.id}`} className="cursor-pointer flex items-center w-full">
+                              View Details
+                            </Link>
                           }
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                          <span>View Details</span>
-                        </DropdownMenuItem>
-
+                        />
                         <DropdownMenuItem
                           onClick={() => handleTogglePause(m.id, m.status)}
-                          className="cursor-pointer flex items-center gap-2"
+                          className="cursor-pointer"
                         >
                           {m.status === "PAUSED" ? (
                             <>
-                              <Play className="h-4 w-4 text-emerald-500" />
+                              <Play className="mr-2 h-4 w-4 text-emerald-500" />
                               <span>Resume Monitor</span>
                             </>
                           ) : (
                             <>
-                              <Pause className="h-4 w-4 text-amber-500" />
+                              <Pause className="mr-2 h-4 w-4 text-amber-500" />
                               <span>Pause Monitor</span>
                             </>
                           )}
                         </DropdownMenuItem>
-
                         <DropdownMenuSeparator />
-
-                        <div className="p-1">
-                          <ConfirmDialog
-                            title="Delete Monitor?"
-                            description={`Are you sure you want to delete "${m.name}"? This will permanently stop checks and delete all history logs.`}
-                            confirmLabel="Delete Monitor"
-                            onConfirm={() => handleDelete(m.id, m.name)}
-                            trigger={
-                              <button
-                                type="button"
-                                className="w-full text-left flex items-center gap-2 px-2 py-1.5 text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 rounded-md cursor-pointer"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                                <span>Delete Monitor</span>
-                              </button>
-                            }
-                          />
-                        </div>
+                        <ConfirmDialog
+                          title="Delete Monitor?"
+                          description={`Are you sure you want to permanently delete "${m.name}"? All historical latency records will be lost.`}
+                          confirmLabel="Delete"
+                          variant="destructive"
+                          onConfirm={() => handleDelete(m.id, m.name)}
+                          trigger={
+                            <button
+                              type="button"
+                              className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none transition-colors hover:bg-accent text-rose-600 focus:bg-rose-50 dark:focus:bg-rose-950 w-full"
+                            >
+                              <Trash2 className="mr-2 h-3.5 w-3.5" />
+                              Delete
+                            </button>
+                          }
+                        />
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>

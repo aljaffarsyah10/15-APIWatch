@@ -18,6 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { authClient } from "@/lib/auth/auth-client";
 import { loginSchema, type LoginFormData } from "../schemas";
 
 export function LoginForm() {
@@ -32,20 +33,35 @@ export function LoginForm() {
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: "developer@apiwatch.dev",
-      password: "password123",
+      email: "",
+      password: "",
     },
   });
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
-    // Simulated UI auth latency
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setIsLoading(false);
-    toast.success("Welcome back!", {
-      description: `Signed in as ${data.email} (Frontend Demo Mode)`,
-    });
-    router.push("/dashboard");
+    try {
+      const res = await authClient.signIn.email({
+        email: data.email,
+        password: data.password,
+      });
+
+      if (res.error) {
+        toast.error(res.error.message || "Invalid email or password");
+        return;
+      }
+
+      toast.success("Welcome back!", {
+        description: `Signed in as ${data.email}`,
+      });
+      router.push("/dashboard");
+      router.refresh();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to sign in";
+      toast.error(msg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -98,9 +114,9 @@ export function LoginForm() {
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
+                  <EyeOff className="w-4 h-4" />
                 ) : (
-                  <Eye className="h-4 w-4" />
+                  <Eye className="w-4 h-4" />
                 )}
               </button>
             </div>
@@ -109,20 +125,20 @@ export function LoginForm() {
             )}
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col gap-4">
+        <CardFooter className="flex flex-col space-y-4 pt-2">
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isLoading ? "Signing in..." : "Sign In"}
           </Button>
-          <div className="text-center text-xs text-muted-foreground">
+          <p className="text-xs text-center text-muted-foreground">
             Don&apos;t have an account?{" "}
             <Link
               href="/register"
-              className="font-medium text-primary hover:underline"
+              className="text-primary hover:underline font-medium"
             >
-              Create an account
+              Sign up
             </Link>
-          </div>
+          </p>
         </CardFooter>
       </form>
     </Card>

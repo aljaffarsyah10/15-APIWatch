@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
-import Link from "next/link";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Bell,
+  Loader2,
   Mail,
   Plus,
+  RefreshCw,
   Trash2,
   Webhook,
 } from "lucide-react";
@@ -20,7 +20,6 @@ import { Switch } from "@/components/ui/switch";
 import {
   Card,
   CardContent,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -35,13 +34,22 @@ import {
 } from "@/components/ui/dialog";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
-import { MOCK_ALERT_CHANNELS } from "../mocks";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { ErrorState } from "@/components/shared/ErrorState";
+import { LoadingSkeleton } from "@/components/shared/LoadingSkeleton";
 import { alertChannelSchema, type AlertChannelFormData } from "../schemas";
+import { alertApi } from "../api";
 import type { AlertChannelItem } from "../types";
+import { getErrorMessage } from "@/lib/api/error";
+import { cn } from "@/lib/utils";
 
 export function AlertSettingsView() {
-  const [channels, setChannels] = useState<AlertChannelItem[]>(MOCK_ALERT_CHANNELS);
+  const [channels, setChannels] = useState<AlertChannelItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const {
     register,
@@ -61,179 +69,236 @@ export function AlertSettingsView() {
 
   const selectedType = watch("type");
 
-  const handleToggleChannel = (id: string, currentEnabled: boolean) => {
-    setChannels((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, isEnabled: !currentEnabled } : c))
-    );
-    toast.success(
-      !currentEnabled ? "Channel enabled" : "Channel disabled",
-      {
-        description: `Alert notifications updated for channel ${id}`,
-      }
-    );
+  const reloadChannels = async () => {
+    setIsRefreshing(true);
+    try {
+      const data = await alertApi.list();
+      setChannels(data);
+      setError(null);
+      toast.success("Alert channels refreshed");
+    } catch (err: unknown) {
+      toast.error("Failed to fetch channels", {
+        description: getErrorMessage(err),
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
   };
 
-  const handleDeleteChannel = (id: string, name: string) => {
-    setChannels((prev) => prev.filter((c) => c.id !== id));
-    toast.success("Channel deleted", {
-      description: `Removed "${name}" from notification destinations`,
-    });
-  };
+  useEffect(() => {
+    let isMounted = true;
 
-  const onSubmit = (data: AlertChannelFormData) => {
-    const newChan: AlertChannelItem = {
-      id: `chan-${Date.now()}`,
-      name: data.name,
-      type: data.type,
-      destination: data.destination,
-      secretMasked: data.secret ? "••••••••••••" : undefined,
-      isEnabled: true,
-      deliveredEventsCount: 0,
+    alertApi
+      .list()
+      .then((data) => {
+        if (isMounted) {
+          setChannels(data);
+          setError(null);
+          setIsLoading(false);
+        }
+      })
+      .catch((err: unknown) => {
+        if (isMounted) {
+          setError(getErrorMessage(err));
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
     };
+  }, []);
 
-    setChannels((prev) => [newChan, ...prev]);
-    setIsDialogOpen(false);
-    reset();
-    toast.success("Alert channel created", {
-      description: `Target "${data.name}" added successfully (Demo Mode)`,
-    });
+  const handleToggleChannel = async (id: string, currentEnabled: boolean) => {
+    try {
+      await alertApi.update(id, { isEnabled: !currentEnabled });
+      setChannels((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, isEnabled: !currentEnabled } : c))
+      );
+      toast.success(!currentEnabled ? "Channel enabled" : "Channel disabled", {
+        description: `Alert notifications updated`,
+      });
+    } catch (err: unknown) {
+      toast.error("Failed to update channel", {
+        description: getErrorMessage(err),
+      });
+    }
+  };
+
+  const handleDeleteChannel = async (id: string, name: string) => {
+    try {
+      await alertApi.delete(id);
+      setChannels((prev) => prev.filter((c) => c.id !== id));
+      toast.success("Channel deleted", {
+        description: `Removed "${name || "Channel"}"`,
+      });
+    } catch (err: unknown) {
+      toast.error("Failed to delete channel", {
+        description: getErrorMessage(err),
+      });
+    }
+  };
+
+  const onSubmit = async (data: AlertChannelFormData) => {
+    setIsSubmitting(true);
+    try {
+      await alertApi.create({
+        type: data.type,
+        destination: data.destination,
+        secret: data.secret || undefined,
+        isEnabled: true,
+      });
+
+      setIsDialogOpen(false);
+      reset();
+      toast.success("Alert channel created", {
+        description: `Target "${data.destination}" added successfully`,
+      });
+      reloadChannels();
+    } catch (err: unknown) {
+      toast.error("Failed to create alert channel", {
+        description: getErrorMessage(err),
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="space-y-6 max-w-4xl">
       <PageHeader
         title="Alert Channels"
-        description="Configure automated notifications for endpoint downtime and recovery"
+        description="Configure notification destinations for automated downtime alerts and recovery events"
       >
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger
-            render={
-              <Button size="sm" className="gap-1.5">
-                <Plus className="h-4 w-4" />
-                Add Channel
-              </Button>
-            }
-          />
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Alert Channel</DialogTitle>
-              <DialogDescription className="text-xs">
-                Receive notifications when an endpoint goes down or recovers
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="chan-name">Channel Name</Label>
-                <Input
-                  id="chan-name"
-                  placeholder="e.g. DevOps On-Call Team"
-                  {...register("name")}
-                />
-                {errors.name && (
-                  <p className="text-xs text-rose-500">{errors.name.message}</p>
-                )}
-              </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={reloadChannels}
+            disabled={isRefreshing}
+            className="gap-1.5"
+          >
+            <RefreshCw
+              className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin")}
+            />
+            <span>Refresh</span>
+          </Button>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="chan-type">Channel Type</Label>
-                <select
-                  id="chan-type"
-                  {...register("type")}
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                >
-                  <option value="EMAIL">Email (SMTP)</option>
-                  <option value="WEBHOOK">Webhook (HTTP POST)</option>
-                </select>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="chan-dest">
-                  {selectedType === "EMAIL" ? "Email Address" : "Webhook URL"}
-                </Label>
-                <Input
-                  id="chan-dest"
-                  placeholder={
-                    selectedType === "EMAIL"
-                      ? "alerts@example.com"
-                      : "https://hooks.slack.com/services/..."
-                  }
-                  {...register("destination")}
-                />
-                {errors.destination && (
-                  <p className="text-xs text-rose-500">
-                    {errors.destination.message}
-                  </p>
-                )}
-              </div>
-
-              {selectedType === "WEBHOOK" && (
-                <div className="space-y-1.5">
-                  <Label htmlFor="chan-secret">Signing Secret (Optional)</Label>
-                  <Input
-                    id="chan-secret"
-                    type="password"
-                    placeholder="whsec_..."
-                    {...register("secret")}
-                  />
-                  <p className="text-[11px] text-muted-foreground">
-                    Stored securely using AES-256-GCM encryption.
-                  </p>
-                </div>
-              )}
-
-              <DialogFooter className="pt-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsDialogOpen(false)}
-                >
-                  Cancel
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger
+              render={
+                <Button size="sm" className="gap-2">
+                  <Plus className="h-4 w-4" />
+                  Add Channel
                 </Button>
-                <Button type="submit">Create Channel</Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+              }
+            />
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Add Alert Channel</DialogTitle>
+                <DialogDescription className="text-xs">
+                  Choose where to receive downtime alerts when an endpoint fails
+                </DialogDescription>
+              </DialogHeader>
+
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-2">
+                <div className="space-y-1.5">
+                  <Label htmlFor="type">Channel Type</Label>
+                  <select
+                    id="type"
+                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                    {...register("type")}
+                  >
+                    <option value="EMAIL">Email Address (SMTP)</option>
+                    <option value="WEBHOOK">Webhook (HTTP POST)</option>
+                  </select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="destination">
+                    {selectedType === "EMAIL" ? "Recipient Email" : "Webhook URL"}
+                  </Label>
+                  <Input
+                    id="destination"
+                    placeholder={
+                      selectedType === "EMAIL"
+                        ? "alerts@yourcompany.com"
+                        : "https://api.yourdomain.com/webhooks/apiwatch"
+                    }
+                    {...register("destination")}
+                  />
+                  {errors.destination && (
+                    <p className="text-xs text-rose-500">
+                      {errors.destination.message}
+                    </p>
+                  )}
+                </div>
+
+                {selectedType === "WEBHOOK" && (
+                  <div className="space-y-1.5">
+                    <Label htmlFor="secret">
+                      Signing Secret (Optional, for HMAC SHA-256)
+                    </Label>
+                    <Input
+                      id="secret"
+                      type="password"
+                      placeholder="webhook_secret_key"
+                      {...register("secret")}
+                    />
+                    <p className="text-[11px] text-muted-foreground">
+                      Included in the X-APIWatch-Signature header
+                    </p>
+                  </div>
+                )}
+
+                <DialogFooter className="pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    {isSubmitting && (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    )}
+                    {isSubmitting ? "Adding..." : "Add Channel"}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </PageHeader>
 
-      {/* Tabs */}
-      <div className="flex gap-2 border-b pb-2 text-sm">
-        <Link
-          href="/settings"
-          className="text-muted-foreground hover:text-foreground pb-2 transition-colors"
-        >
-          General
-        </Link>
-        <Link
-          href="/settings/alerts"
-          className="font-medium text-primary border-b-2 border-primary pb-2 -mb-2 ml-4"
-        >
-          Alert Channels
-        </Link>
-      </div>
-
-      {/* Alert Policy Note */}
-      <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 text-xs text-muted-foreground space-y-1">
-        <p className="font-semibold text-foreground flex items-center gap-1.5">
-          <Bell className="h-4 w-4 text-blue-500" />
-          Notification Policy: Deduplication Active
-        </p>
-        <p>
-          Alerts are dispatched when an endpoint transitions from UP to DOWN, and
-          once more upon recovery. Ongoing downtime checks will not spam your
-          inbox or webhook channels.
-        </p>
-      </div>
-
-      {/* Channels List */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        {channels.map((ch) => (
-          <Card key={ch.id}>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                    {ch.type === "EMAIL" ? (
+      {/* Content */}
+      {isLoading ? (
+        <LoadingSkeleton type="card" count={2} />
+      ) : error ? (
+        <ErrorState
+          title="Failed to Load Alert Channels"
+          message={error}
+          onRetry={() => {
+            setIsLoading(true);
+            reloadChannels();
+          }}
+        />
+      ) : channels.length === 0 ? (
+        <EmptyState
+          title="No Alert Channels Configured"
+          description="Add an email address or webhook endpoint to receive notifications when your monitors go DOWN."
+          actionLabel="Add Alert Channel"
+          onAction={() => setIsDialogOpen(true)}
+        />
+      ) : (
+        <div className="grid gap-4">
+          {channels.map((channel) => (
+            <Card key={channel.id}>
+              <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                    {channel.type === "EMAIL" ? (
                       <Mail className="h-4 w-4" />
                     ) : (
                       <Webhook className="h-4 w-4" />
@@ -241,66 +306,63 @@ export function AlertSettingsView() {
                   </div>
                   <div>
                     <CardTitle className="text-sm font-semibold">
-                      {ch.name}
+                      {channel.type === "EMAIL" ? "Email Alert" : "Webhook Endpoint"}
                     </CardTitle>
-                    <span className="text-[11px] text-muted-foreground">
-                      {ch.type === "EMAIL" ? "SMTP Notification" : "HTTP POST Payload"}
-                    </span>
+                    <p className="text-xs text-muted-foreground font-mono mt-0.5">
+                      {channel.destination}
+                    </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    variant="outline"
-                    className={
-                      ch.isEnabled
-                        ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 text-xs"
-                        : "bg-muted text-muted-foreground text-xs"
+
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      {channel.isEnabled ? "Active" : "Disabled"}
+                    </span>
+                    <Switch
+                      checked={channel.isEnabled}
+                      onCheckedChange={() =>
+                        handleToggleChannel(channel.id, channel.isEnabled)
+                      }
+                      aria-label="Toggle alert channel status"
+                    />
+                  </div>
+
+                  <ConfirmDialog
+                    title="Delete Alert Channel?"
+                    description={`Are you sure you want to remove "${channel.destination}"? You will no longer receive alerts at this destination.`}
+                    confirmLabel="Delete"
+                    variant="destructive"
+                    onConfirm={() =>
+                      handleDeleteChannel(channel.id, channel.destination)
                     }
-                  >
-                    {ch.isEnabled ? "Enabled" : "Disabled"}
-                  </Badge>
-                  <Switch
-                    checked={ch.isEnabled}
-                    onCheckedChange={() =>
-                      handleToggleChannel(ch.id, ch.isEnabled)
+                    trigger={
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-muted-foreground hover:text-rose-500"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     }
                   />
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent className="text-xs space-y-1">
-              <span className="text-muted-foreground block">Destination:</span>
-              <span className="font-mono font-medium text-foreground truncate block">
-                {ch.destination}
-              </span>
-              {ch.secretMasked && (
-                <span className="text-[11px] text-muted-foreground font-mono block">
-                  Secret: {ch.secretMasked}
-                </span>
-              )}
-            </CardContent>
-            <CardFooter className="border-t pt-3 flex items-center justify-between text-xs text-muted-foreground">
-              <span>Delivered: {ch.deliveredEventsCount} events</span>
-              <ConfirmDialog
-                title="Delete Alert Channel?"
-                description={`Are you sure you want to delete "${ch.name}"? You will stop receiving alerts at ${ch.destination}.`}
-                confirmLabel="Delete Channel"
-                onConfirm={() => handleDeleteChannel(ch.id, ch.name)}
-                trigger={
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 text-xs text-rose-600 dark:text-rose-400 hover:bg-rose-500/10 gap-1"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Delete
-                  </Button>
-                }
-              />
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+              </CardHeader>
+              <CardContent className="pt-2">
+                <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                  <Badge variant="outline" className="text-[10px]">
+                    {channel.type}
+                  </Badge>
+                  <span>•</span>
+                  <span>
+                    Triggers on status transition: UP → DOWN and recovery
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

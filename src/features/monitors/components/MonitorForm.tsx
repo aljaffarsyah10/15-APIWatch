@@ -20,6 +20,8 @@ import {
 } from "@/components/ui/card";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { monitorFormSchema, type MonitorFormData } from "../schemas";
+import { monitorApi, type CreateMonitorPayload } from "../api";
+import { getErrorMessage } from "@/lib/api/error";
 
 interface MonitorFormProps {
   initialData?: Partial<MonitorFormData> & { id?: string };
@@ -38,8 +40,8 @@ export function MonitorForm({ initialData, isEditing = false }: MonitorFormProps
   } = useForm<MonitorFormData>({
     resolver: zodResolver(monitorFormSchema),
     defaultValues: {
-      name: initialData?.name || "Production Health Endpoint",
-      url: initialData?.url || "https://httpbin.org/status/200",
+      name: initialData?.name || "",
+      url: initialData?.url || "",
       method: initialData?.method || "GET",
       intervalSeconds: initialData?.intervalSeconds || 60,
       timeoutMs: initialData?.timeoutMs || 10000,
@@ -55,17 +57,72 @@ export function MonitorForm({ initialData, isEditing = false }: MonitorFormProps
 
   const onSubmit = async (data: MonitorFormData) => {
     setIsSubmitting(true);
-    // Simulate UI processing
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setIsSubmitting(false);
 
-    toast.success(
-      isEditing ? "Monitor updated successfully" : "Monitor created successfully",
-      {
-        description: `Scheduled check for "${data.name}" every ${data.intervalSeconds}s (Frontend Demo)`,
+    try {
+      // Parse status codes string: e.g. "200, 201" -> [200, 201]
+      const expectedStatusCodes = data.expectedStatusCodes
+        .split(",")
+        .map((s) => parseInt(s.trim(), 10))
+        .filter((n) => !isNaN(n));
+
+      // Parse request headers if provided
+      let requestHeaders: Record<string, string> | undefined;
+      if (data.requestHeaders?.trim()) {
+        try {
+          requestHeaders = JSON.parse(data.requestHeaders.trim());
+        } catch {
+          // If not valid JSON, parse line-by-line "Header: Value"
+          requestHeaders = {};
+          data.requestHeaders.split("\n").forEach((line) => {
+            const [k, ...v] = line.split(":");
+            if (k && v.length) {
+              requestHeaders![k.trim()] = v.join(":").trim();
+            }
+          });
+        }
       }
-    );
-    router.push("/monitors");
+
+      const payload: CreateMonitorPayload = {
+        name: data.name,
+        url: data.url,
+        method: data.method,
+        intervalSeconds: data.intervalSeconds,
+        timeoutMs: data.timeoutMs,
+        expectedStatusCodes: expectedStatusCodes.length ? expectedStatusCodes : [200],
+        requestHeaders,
+        requestBody: isBodyAllowed && data.requestBody?.trim() ? data.requestBody : undefined,
+        bodyValidation: data.bodyMatch?.trim()
+          ? {
+              type: "contains",
+              target: data.bodyMatch.trim(),
+            }
+          : undefined,
+      };
+
+      if (isEditing && initialData?.id) {
+        await monitorApi.update(initialData.id, payload);
+        toast.success("Monitor updated successfully", {
+          description: `Changes saved for "${data.name}"`,
+        });
+      } else {
+        await monitorApi.create(payload);
+        toast.success("Monitor created successfully", {
+          description: `Scheduled check for "${data.name}" every ${data.intervalSeconds}s`,
+        });
+      }
+
+      router.push("/monitors");
+      router.refresh();
+    } catch (err: unknown) {
+      toast.error(
+        isEditing ? "Failed to update monitor" : "Failed to create monitor",
+        {
+          description: getErrorMessage(err),
+        }
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -101,7 +158,7 @@ export function MonitorForm({ initialData, isEditing = false }: MonitorFormProps
               <Label htmlFor="name">Monitor Name</Label>
               <Input
                 id="name"
-                placeholder="e.g. Production Authentication Service"
+                placeholder="e.g. Production Billing API Health"
                 {...register("name")}
               />
               {errors.name && (
@@ -109,13 +166,29 @@ export function MonitorForm({ initialData, isEditing = false }: MonitorFormProps
               )}
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-4">
-              <div className="sm:col-span-1 space-y-1.5">
+            <div className="space-y-1.5">
+              <Label htmlFor="url">Target Endpoint URL</Label>
+              <Input
+                id="url"
+                placeholder="https://api.yourdomain.com/health"
+                {...register("url")}
+              />
+              <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-1">
+                <ShieldAlert className="h-3 w-3 text-amber-500" />
+                SSRF protected: private IPs, localhost, and cloud metadata endpoints are strictly blocked.
+              </p>
+              {errors.url && (
+                <p className="text-xs text-rose-500">{errors.url.message}</p>
+              )}
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="space-y-1.5">
                 <Label htmlFor="method">HTTP Method</Label>
                 <select
                   id="method"
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                   {...register("method")}
-                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors font-mono focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 >
                   <option value="GET">GET</option>
                   <option value="POST">POST</option>
@@ -126,20 +199,40 @@ export function MonitorForm({ initialData, isEditing = false }: MonitorFormProps
                 </select>
               </div>
 
-              <div className="sm:col-span-3 space-y-1.5">
-                <Label htmlFor="url">Endpoint URL</Label>
-                <Input
-                  id="url"
-                  placeholder="https://api.example.com/health"
-                  className="font-mono text-sm"
-                  {...register("url")}
-                />
-                {errors.url ? (
-                  <p className="text-xs text-rose-500">{errors.url.message}</p>
-                ) : (
-                  <p className="text-[11px] text-muted-foreground flex items-center gap-1 mt-1">
-                    <ShieldAlert className="h-3 w-3 text-amber-500 shrink-0" />
-                    Protected against SSRF: localhost and private IPs are blocked.
+              <div className="space-y-1.5">
+                <Label htmlFor="intervalSeconds">Check Frequency</Label>
+                <select
+                  id="intervalSeconds"
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  {...register("intervalSeconds", { valueAsNumber: true })}
+                >
+                  <option value={60}>Every 1 minute (60s)</option>
+                  <option value={120}>Every 2 minutes (120s)</option>
+                  <option value={300}>Every 5 minutes (300s)</option>
+                  <option value={600}>Every 10 minutes (600s)</option>
+                </select>
+                {errors.intervalSeconds && (
+                  <p className="text-xs text-rose-500">
+                    {errors.intervalSeconds.message}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="timeoutMs">Timeout Limit</Label>
+                <select
+                  id="timeoutMs"
+                  className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  {...register("timeoutMs", { valueAsNumber: true })}
+                >
+                  <option value={5000}>5 seconds (5000ms)</option>
+                  <option value={10000}>10 seconds (10000ms)</option>
+                  <option value={15000}>15 seconds (15000ms)</option>
+                  <option value={30000}>30 seconds (30000ms)</option>
+                </select>
+                {errors.timeoutMs && (
+                  <p className="text-xs text-rose-500">
+                    {errors.timeoutMs.message}
                   </p>
                 )}
               </div>
@@ -147,63 +240,29 @@ export function MonitorForm({ initialData, isEditing = false }: MonitorFormProps
           </CardContent>
         </Card>
 
-        {/* Section 2: Request Configuration */}
-        {isBodyAllowed && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base font-semibold">
-                2. Request Configuration ({selectedMethod})
-              </CardTitle>
-              <CardDescription className="text-xs">
-                Headers and payload sent by the worker when performing the check
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="requestHeaders">Custom Headers (JSON or Key: Value)</Label>
-                <Textarea
-                  id="requestHeaders"
-                  placeholder='{"Authorization": "Bearer token", "X-Custom-Header": "value"}'
-                  className="font-mono text-xs h-20"
-                  {...register("requestHeaders")}
-                />
-                <p className="text-[11px] text-muted-foreground">
-                  Sensitive authorization headers are encrypted with AES-256-GCM.
-                </p>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="requestBody">Request Body (JSON / Text)</Label>
-                <Textarea
-                  id="requestBody"
-                  placeholder='{"status": "ping"}'
-                  className="font-mono text-xs h-24"
-                  {...register("requestBody")}
-                />
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Section 3: Expected Response & Assertions */}
+        {/* Section 2: Validation Criteria */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base font-semibold">
-              3. Expected Response & Assertions
+              2. Validation & Assertions
             </CardTitle>
             <CardDescription className="text-xs">
-              Criteria required for a check to be classified as successful (UP)
+              Define the conditions required for a check to be marked as operational (UP)
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="expectedStatusCodes">Expected Status Codes</Label>
+              <Label htmlFor="expectedStatusCodes">
+                Expected HTTP Status Codes
+              </Label>
               <Input
                 id="expectedStatusCodes"
-                placeholder="Comma separated: 200, 201, 204"
-                className="font-mono text-sm"
+                placeholder="200, 201, 204"
                 {...register("expectedStatusCodes")}
               />
+              <p className="text-[11px] text-muted-foreground">
+                Comma-separated HTTP status codes considered healthy
+              </p>
               {errors.expectedStatusCodes && (
                 <p className="text-xs text-rose-500">
                   {errors.expectedStatusCodes.message}
@@ -212,68 +271,58 @@ export function MonitorForm({ initialData, isEditing = false }: MonitorFormProps
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="bodyMatch">Response Body Contains (Optional)</Label>
+              <Label htmlFor="bodyMatch">Response Body Match (Optional)</Label>
               <Input
                 id="bodyMatch"
-                placeholder="e.g. 'status': 'ok' or 'healthy'"
-                className="font-mono text-sm"
+                placeholder='e.g. "status":"ok" or healthy'
                 {...register("bodyMatch")}
               />
+              <p className="text-[11px] text-muted-foreground">
+                Ensures the returned body contains this required substring
+              </p>
             </div>
           </CardContent>
         </Card>
 
-        {/* Section 4: Schedule & Timeout */}
+        {/* Section 3: Request Customization */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base font-semibold">
-              4. Schedule & Timeout
+              3. Request Payload & Headers
             </CardTitle>
             <CardDescription className="text-xs">
-              Worker polling frequency and request cancellation threshold
+              Configure custom headers and request body (encrypted with AES-256-GCM at rest)
             </CardDescription>
           </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2">
+          <CardContent className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="intervalSeconds">Check Interval (Seconds)</Label>
-              <select
-                id="intervalSeconds"
-                {...register("intervalSeconds", { valueAsNumber: true })}
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors font-mono focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              >
-                <option value={60}>Every 1 minute (60s)</option>
-                <option value={300}>Every 5 minutes (300s)</option>
-                <option value={900}>Every 15 minutes (900s)</option>
-                <option value={1800}>Every 30 minutes (1800s)</option>
-                <option value={3600}>Every 1 hour (3600s)</option>
-              </select>
-              {errors.intervalSeconds && (
-                <p className="text-xs text-rose-500">
-                  {errors.intervalSeconds.message}
-                </p>
-              )}
+              <Label htmlFor="requestHeaders">Custom Headers (JSON)</Label>
+              <Textarea
+                id="requestHeaders"
+                placeholder='{"Authorization": "Bearer token123", "X-Custom-Header": "value"}'
+                rows={3}
+                className="font-mono text-xs"
+                {...register("requestHeaders")}
+              />
             </div>
 
-            <div className="space-y-1.5">
-              <Label htmlFor="timeoutMs">Timeout Threshold (Milliseconds)</Label>
-              <Input
-                id="timeoutMs"
-                type="number"
-                placeholder="10000"
-                className="font-mono"
-                {...register("timeoutMs", { valueAsNumber: true })}
-              />
-              {errors.timeoutMs && (
-                <p className="text-xs text-rose-500">
-                  {errors.timeoutMs.message}
-                </p>
-              )}
-            </div>
+            {isBodyAllowed && (
+              <div className="space-y-1.5">
+                <Label htmlFor="requestBody">Request Body (JSON or Plaintext)</Label>
+                <Textarea
+                  id="requestBody"
+                  placeholder='{"query": "healthcheck"}'
+                  rows={4}
+                  className="font-mono text-xs"
+                  {...register("requestBody")}
+                />
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Actions Bar */}
-        <div className="flex items-center justify-end gap-3 pt-2">
+        {/* Actions */}
+        <div className="flex items-center justify-end gap-3">
           <Link
             href="/monitors"
             className={buttonVariants({ variant: "outline" })}
@@ -290,7 +339,7 @@ export function MonitorForm({ initialData, isEditing = false }: MonitorFormProps
               ? "Saving..."
               : isEditing
               ? "Update Monitor"
-              : "Save Monitor"}
+              : "Create Monitor"}
           </Button>
         </div>
       </form>

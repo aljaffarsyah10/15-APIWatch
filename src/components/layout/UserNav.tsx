@@ -2,7 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { LogOut, Settings, User } from "lucide-react";
+import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { authClient } from "@/lib/auth/auth-client";
 
 interface UserNavProps {
   user?: {
@@ -25,12 +28,24 @@ interface UserNavProps {
 export function UserNav({
   user = { name: "Developer", email: "dev@apiwatch.dev" },
 }: UserNavProps) {
+  const router = useRouter();
   const initials = user.name
     .split(" ")
     .map((n) => n[0])
     .join("")
     .toUpperCase()
     .slice(0, 2);
+
+  const handleLogout = async () => {
+    try {
+      await authClient.signOut();
+      toast.info("Signed out successfully");
+      router.push("/login");
+      router.refresh();
+    } catch {
+      router.push("/login");
+    }
+  };
 
   return (
     <DropdownMenu>
@@ -56,17 +71,34 @@ export function UserNav({
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem render={<Link href="/settings" className="flex items-center gap-2 cursor-pointer w-full" />}>
+          <DropdownMenuItem
+            render={
+              <Link
+                href="/settings"
+                className="flex items-center gap-2 cursor-pointer w-full"
+              />
+            }
+          >
             <User className="h-4 w-4" />
             <span>Profile</span>
           </DropdownMenuItem>
-          <DropdownMenuItem render={<Link href="/settings" className="flex items-center gap-2 cursor-pointer w-full" />}>
+          <DropdownMenuItem
+            render={
+              <Link
+                href="/settings"
+                className="flex items-center gap-2 cursor-pointer w-full"
+              />
+            }
+          >
             <Settings className="h-4 w-4" />
             <span>Settings</span>
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem render={<Link href="/login" className="flex items-center gap-2 text-rose-600 dark:text-rose-400 cursor-pointer w-full" />}>
+        <DropdownMenuItem
+          onClick={handleLogout}
+          className="flex items-center gap-2 text-rose-600 dark:text-rose-400 cursor-pointer w-full"
+        >
           <LogOut className="h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>

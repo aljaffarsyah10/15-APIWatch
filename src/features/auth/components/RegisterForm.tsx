@@ -18,6 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { authClient } from "@/lib/auth/auth-client";
 import { registerSchema, type RegisterFormData } from "../schemas";
 
 export function RegisterForm() {
@@ -40,13 +41,29 @@ export function RegisterForm() {
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
-    // Simulated UI latency
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setIsLoading(false);
-    toast.success("Account created successfully!", {
-      description: `Welcome to APIWatch, ${data.name}! (Frontend Demo Mode)`,
-    });
-    router.push("/dashboard");
+    try {
+      const res = await authClient.signUp.email({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+      });
+
+      if (res.error) {
+        toast.error(res.error.message || "Failed to create account");
+        return;
+      }
+
+      toast.success("Account created successfully!", {
+        description: `Welcome to APIWatch, ${data.name}!`,
+      });
+      router.push("/dashboard");
+      router.refresh();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Registration failed";
+      toast.error(msg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -92,7 +109,7 @@ export function RegisterForm() {
               <Input
                 id="password"
                 type={showPassword ? "text" : "password"}
-                placeholder="Minimum 8 characters"
+                placeholder="At least 8 characters"
                 autoComplete="new-password"
                 {...register("password")}
                 className="pr-10"
@@ -104,9 +121,9 @@ export function RegisterForm() {
                 aria-label={showPassword ? "Hide password" : "Show password"}
               >
                 {showPassword ? (
-                  <EyeOff className="h-4 w-4" />
+                  <EyeOff className="w-4 h-4" />
                 ) : (
-                  <Eye className="h-4 w-4" />
+                  <Eye className="w-4 h-4" />
                 )}
               </button>
             </div>
@@ -115,20 +132,20 @@ export function RegisterForm() {
             )}
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col gap-4">
+        <CardFooter className="flex flex-col space-y-4 pt-2">
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isLoading ? "Creating account..." : "Create Account"}
+            {isLoading ? "Creating account..." : "Get Started"}
           </Button>
-          <div className="text-center text-xs text-muted-foreground">
+          <p className="text-xs text-center text-muted-foreground">
             Already have an account?{" "}
             <Link
               href="/login"
-              className="font-medium text-primary hover:underline"
+              className="text-primary hover:underline font-medium"
             >
               Sign in
             </Link>
-          </div>
+          </p>
         </CardFooter>
       </form>
     </Card>
