@@ -1,0 +1,55 @@
+# ==============================================================================
+# APIWatch Production Caddy Reverse Proxy Configuration
+# Automatic HTTPS, HTTP/2 & HTTP/3, Security Headers & Rate/Buffer Limits
+# ==============================================================================
+
+{
+    email {$ACME_EMAIL:admin@example.com}
+    admin off
+}
+
+{$APP_DOMAIN:localhost} {
+    # Encode responses using modern compression
+    encode zstd gzip
+
+    # Production Security Headers (HSTS, Anti-Clickjacking, XSS Protection, Content-Type Options)
+    header {
+        Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        X-XSS-Protection "1; mode=block"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+        -Server
+    }
+
+    # Request body size limit (prevent DoS payloads)
+    request_body {
+        max_size 10MB
+    }
+
+    # Static assets caching
+    @static {
+        path /_next/static/* /favicon.ico /robots.txt /sitemap.xml
+    }
+    header @static Cache-Control "public, max-age=31536000, immutable"
+
+    # Reverse proxy to Next.js Web container
+    reverse_proxy web:3000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+        header_up X-Forwarded-Proto {scheme}
+
+        # Health checking backend
+        health_uri /robots.txt
+        health_interval 15s
+        health_timeout 5s
+    }
+
+    # Structured JSON Access Logging
+    log {
+        output stdout
+        format json
+    }
+}
