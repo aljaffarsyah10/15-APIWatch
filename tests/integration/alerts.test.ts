@@ -73,7 +73,7 @@ describe("Alert Channel Service Integration", () => {
       id: "chan-webhook-1",
       userId,
       type: "WEBHOOK" as const,
-      destination: "https://api.company.com/webhook",
+      destination: "https://example.com/webhook",
       secretEncrypted: "encrypted",
       isEnabled: true,
       createdAt: new Date(),
@@ -86,7 +86,7 @@ describe("Alert Channel Service Integration", () => {
 
     await AlertService.createChannel(userId, {
       type: "WEBHOOK",
-      destination: "https://api.company.com/webhook",
+      destination: "https://example.com/webhook",
       secret: "whsec_supersecretkey123",
     });
 
@@ -96,6 +96,22 @@ describe("Alert Channel Service Integration", () => {
     expect(secretEncrypted).toBeDefined();
     expect(secretEncrypted).not.toBe("whsec_supersecretkey123");
     expect(secretEncrypted!.split(":")).toHaveLength(3);
+  });
+
+  it("should block webhook channel pointing to private IP or localhost (Webhook SSRF Protection)", async () => {
+    await expect(
+      AlertService.createChannel(userId, {
+        type: "WEBHOOK",
+        destination: "http://127.0.0.1:9000/internal-webhook",
+      })
+    ).rejects.toThrow("SSRF_ERROR");
+
+    await expect(
+      AlertService.createChannel(userId, {
+        type: "WEBHOOK",
+        destination: "http://169.254.169.254/latest/meta-data/",
+      })
+    ).rejects.toThrow("SSRF_ERROR");
   });
 
   it("should enforce ownership when updating or deleting channel", async () => {

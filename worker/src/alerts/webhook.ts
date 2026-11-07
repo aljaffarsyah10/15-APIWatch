@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { validateTargetUrl } from "@/lib/security/ssrf";
 import { logger } from "../lib/logger";
 import type { AlertWebhookJobData } from "../lib/queues";
 
@@ -16,6 +17,19 @@ export async function sendAlertWebhook(
     httpStatus,
     failureReason,
   } = data;
+
+  // SSRF preflight protection on webhook destination
+  const ssrfCheck = await validateTargetUrl(destination);
+  if (!ssrfCheck.isSafe) {
+    logger.warn("WEBHOOK_SSRF_BLOCKED", {
+      destination,
+      error: ssrfCheck.error,
+      monitorName,
+    });
+    throw new Error(
+      `SSRF_BLOCKED: Webhook destination is restricted (${ssrfCheck.error})`
+    );
+  }
 
   const payload = {
     event: eventType === "DOWN" ? "monitor.down" : "monitor.recovered",

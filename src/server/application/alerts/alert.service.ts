@@ -1,5 +1,6 @@
 import prisma from "@/lib/db/prisma";
 import { encrypt } from "@/lib/security/encryption";
+import { validateTargetUrl } from "@/lib/security/ssrf";
 import type { AlertChannelType } from "@prisma/client";
 
 export interface CreateAlertChannelInput {
@@ -38,9 +39,16 @@ export class AlertService {
   }
 
   /**
-   * Create new alert channel.
+   * Create new alert channel with SSRF protection for Webhooks.
    */
   static async createChannel(userId: string, input: CreateAlertChannelInput) {
+    if (input.type === "WEBHOOK") {
+      const ssrfCheck = await validateTargetUrl(input.destination);
+      if (!ssrfCheck.isSafe) {
+        throw new Error(`SSRF_ERROR: ${ssrfCheck.error}`);
+      }
+    }
+
     const secretEncrypted = input.secret ? encrypt(input.secret) : null;
 
     const channel = await prisma.alertChannel.create({
@@ -63,7 +71,7 @@ export class AlertService {
   }
 
   /**
-   * Update alert channel.
+   * Update alert channel with SSRF protection.
    */
   static async updateChannel(
     userId: string,
@@ -76,6 +84,13 @@ export class AlertService {
 
     if (!existing) {
       throw new Error("NOT_FOUND: Alert channel not found or unauthorized");
+    }
+
+    if (existing.type === "WEBHOOK" && input.destination) {
+      const ssrfCheck = await validateTargetUrl(input.destination);
+      if (!ssrfCheck.isSafe) {
+        throw new Error(`SSRF_ERROR: ${ssrfCheck.error}`);
+      }
     }
 
     const data: {
