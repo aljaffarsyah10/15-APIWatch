@@ -64,16 +64,18 @@ export function UserNav({
         }
       />
       <DropdownMenuContent className="w-56" align="end">
-        <DropdownMenuLabel className="font-normal p-2.5">
-          <div className="flex flex-col space-y-1">
-            <p className="text-sm font-semibold leading-none text-foreground">
-              {user.name}
-            </p>
-            <p className="text-xs leading-none text-muted-foreground truncate">
-              {user.email}
-            </p>
-          </div>
-        </DropdownMenuLabel>
+        <DropdownMenuGroup>
+          <DropdownMenuLabel className="font-normal p-2.5">
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-semibold leading-none text-foreground">
+                {user.name}
+              </p>
+              <p className="text-xs leading-none text-muted-foreground truncate">
+                {user.email}
+              </p>
+            </div>
+          </DropdownMenuLabel>
+        </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem

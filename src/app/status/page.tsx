@@ -20,7 +20,16 @@ export const metadata: Metadata = {
 
 export default function PublicStatusPage() {
   return (
-    <div className="min-h-screen bg-background flex flex-col selection:bg-blue-500/20 selection:text-blue-600">
+    <div className="min-h-screen bg-transparent relative flex flex-col selection:bg-blue-500/20 selection:text-blue-600">
+      {/* Dynamic Ambient Mesh Glows (Light & Dark) */}
+      <div
+        aria-hidden="true"
+        className="fixed inset-0 pointer-events-none overflow-hidden -z-10"
+      >
+        <div className="absolute -top-32 -left-20 h-96 w-96 rounded-full bg-gradient-to-br from-indigo-500/18 via-blue-500/12 to-transparent blur-3xl dark:from-blue-600/15 dark:via-indigo-900/15 animate-pulse-subtle" />
+        <div className="absolute top-1/3 -right-24 h-96 w-96 rounded-full bg-gradient-to-bl from-sky-400/18 via-teal-400/10 to-transparent blur-3xl dark:from-sky-700/12 dark:via-emerald-950/15" />
+        <div className="absolute inset-0 bg-tech-grid [mask-image:radial-gradient(ellipse_80%_60%_at_50%_0%,#000_70%,transparent_100%)] opacity-35 dark:opacity-20" />
+      </div>
       {/* Top Banner Header */}
       <header className="border-b border-border/80 bg-background/85 backdrop-blur-md sticky top-0 z-40 shadow-2xs">
         <div className="max-w-4xl mx-auto px-4 py-3.5 flex items-center justify-between">

@@ -48,8 +48,8 @@
 }
 
 :root {
-  /* Rich, High-Legibility Light Theme with Cool-Slate & Indigo Ambient Tints */
-  --background: #f1f5f9;
+  /* Rich, High-Legibility Light Theme with Cool-Slate, Indigo & Cyan Ambient Mesh */
+  --background: #f8fafc;
   --foreground: #090e17;
   
   --card: #ffffff;
@@ -58,13 +58,13 @@
   --popover: #ffffff;
   --popover-foreground: #090e17;
   
-  --primary: #1e40af;
+  --primary: #1d4ed8;
   --primary-foreground: #ffffff;
   
-  --secondary: #e2e8f0;
+  --secondary: #f1f5f9;
   --secondary-foreground: #0f172a;
   
-  --muted: #e2e8f0;
+  --muted: #f1f5f9;
   --muted-foreground: #475569;
   
   --accent: #eef2ff;
@@ -73,8 +73,8 @@
   --destructive: #dc2626;
   --destructive-foreground: #ffffff;
   
-  --border: #cbd5e1;
-  --input: #cbd5e1;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
   --ring: #2563eb;
   
   --chart-1: #2563eb;
@@ -87,7 +87,7 @@
   
   --sidebar: #f8fafc;
   --sidebar-foreground: #1e293b;
-  --sidebar-primary: #1e40af;
+  --sidebar-primary: #1d4ed8;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #e0e7ff;
   --sidebar-accent-foreground: #1e1b4b;
@@ -146,9 +146,22 @@
     @apply border-border outline-ring/40;
   }
   body {
-    @apply bg-background text-foreground antialiased selection:bg-blue-500/20 selection:text-blue-600;
+    @apply bg-background text-foreground antialiased selection:bg-blue-500/20 selection:text-blue-600 min-h-screen relative;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11", "tnum";
     letter-spacing: -0.011em;
+    background-image: 
+      radial-gradient(ellipse 95% 65% at 5% -10%, rgba(99, 102, 241, 0.14) 0%, transparent 60%),
+      radial-gradient(ellipse 85% 55% at 95% -10%, rgba(14, 165, 233, 0.14) 0%, transparent 55%),
+      radial-gradient(ellipse 75% 50% at 50% 115%, rgba(16, 185, 129, 0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 85% 50%, rgba(244, 63, 94, 0.04) 0%, transparent 50%);
+    background-attachment: fixed;
+  }
+  .dark body {
+    background-image: 
+      radial-gradient(ellipse 95% 65% at 5% -10%, rgba(30, 58, 138, 0.3) 0%, transparent 60%),
+      radial-gradient(ellipse 85% 55% at 95% -10%, rgba(14, 165, 233, 0.15) 0%, transparent 55%),
+      radial-gradient(ellipse 75% 50% at 50% 115%, rgba(16, 185, 129, 0.07) 0%, transparent 60%);
+    background-attachment: fixed;
   }
   html {
     @apply font-sans scroll-smooth;
@@ -161,15 +174,38 @@
   50% { opacity: 0.85; transform: scale(0.98); }
 }
 
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
 .animate-pulse-subtle {
   animation: pulseSubtle 3s ease-in-out infinite;
 }
 
+.animate-float-slow {
+  animation: floatSlow 6s ease-in-out infinite;
+}
+
 .card-elevated {
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card-elevated:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 12px 28px -6px rgba(15, 23, 42, 0.09), 0 8px 12px -6px rgba(15, 23, 42, 0.04);
+}
+
+.dark .card-elevated:hover {
+  box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.55), 0 8px 12px -6px rgba(0, 0, 0, 0.35);
+}
+
+/* Ambient Radial Mask Pattern for Tech Dashboard Grid */
+.bg-tech-grid {
+  background-size: 24px 24px;
+  background-image: radial-gradient(rgba(100, 116, 139, 0.2) 1px, transparent 1px);
+}
+
+.dark .bg-tech-grid {
+  background-image: radial-gradient(rgba(148, 163, 184, 0.15) 1px, transparent 1px);
 }
