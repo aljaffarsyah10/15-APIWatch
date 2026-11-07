@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
+  Copy,
+  Check,
   ExternalLink,
   MoreHorizontal,
   Pause,
@@ -15,7 +17,6 @@ import {
 import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -42,6 +43,15 @@ import type { MonitorItem } from "../types";
 import { getErrorMessage } from "@/lib/api/error";
 import { cn } from "@/lib/utils";
 
+const METHOD_COLORS: Record<string, string> = {
+  GET: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
+  POST: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20",
+  PUT: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20",
+  PATCH: "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20",
+  DELETE: "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20",
+  HEAD: "bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-500/20",
+};
+
 export function MonitorListTable() {
   const [monitors, setMonitors] = useState<MonitorItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,6 +60,7 @@ export function MonitorListTable() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [methodFilter, setMethodFilter] = useState<string>("ALL");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const displayedMonitors = monitors.filter((m) => {
     if (methodFilter !== "ALL" && m.method !== methodFilter) {
@@ -57,6 +68,14 @@ export function MonitorListTable() {
     }
     return true;
   });
+
+  const handleCopyUrl = (id: string, url: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigator.clipboard.writeText(url);
+    setCopiedId(id);
+    toast.success("URL copied to clipboard");
+    setTimeout(() => setCopiedId(null), 2000);
+  };
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -143,7 +162,7 @@ export function MonitorListTable() {
     <div className="space-y-6">
       <PageHeader
         title="Monitors"
-        description="Manage and monitor availability for all your production HTTP endpoints"
+        description="Continuous health checks, cadence configuration, and latency metrics"
       >
         <div className="flex items-center gap-2">
           <Button
@@ -151,18 +170,18 @@ export function MonitorListTable() {
             size="sm"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="gap-1.5"
+            className="gap-1.5 h-8.5"
           >
             <RefreshCw
-              className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin")}
+              className={cn("h-3.5 w-3.5 text-muted-foreground", isRefreshing && "animate-spin text-primary")}
             />
             <span>Refresh</span>
           </Button>
           <Link
             href="/monitors/new"
-            className={cn(buttonVariants({ size: "sm" }), "gap-2")}
+            className={cn(buttonVariants({ size: "sm" }), "gap-1.5 h-8.5 shadow-2xs")}
           >
-            <PlusCircle className="h-4 w-4" />
+            <PlusCircle className="h-3.5 w-3.5" />
             Add Monitor
           </Link>
         </div>
@@ -173,8 +192,8 @@ export function MonitorListTable() {
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search monitors by name or URL..."
-            className="pl-9"
+            placeholder="Search by name or URL..."
+            className="pl-9 h-8.5 text-xs bg-card"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -184,7 +203,7 @@ export function MonitorListTable() {
           <select
             value={methodFilter}
             onChange={(e) => setMethodFilter(e.target.value)}
-            className="h-8 rounded-md border border-input bg-background px-2 text-xs shadow-sm focus:outline-none"
+            className="h-8.5 rounded-md border border-input bg-card px-2.5 text-xs font-medium text-foreground shadow-2xs focus:outline-none focus:ring-1 focus:ring-ring"
             aria-label="Filter by HTTP method"
           >
             <option value="ALL">All Methods</option>
@@ -195,17 +214,23 @@ export function MonitorListTable() {
             <option value="DELETE">DELETE</option>
           </select>
 
-          {["ALL", "UP", "DOWN", "PAUSED"].map((status) => (
-            <Button
-              key={status}
-              variant={statusFilter === status ? "default" : "outline"}
-              size="sm"
-              onClick={() => setStatusFilter(status)}
-              className="text-xs capitalize h-8"
-            >
-              {status.toLowerCase()}
-            </Button>
-          ))}
+          <div className="flex items-center p-0.5 rounded-md bg-muted/60 border border-border/80">
+            {["ALL", "UP", "DOWN", "PAUSED"].map((status) => (
+              <button
+                key={status}
+                type="button"
+                onClick={() => setStatusFilter(status)}
+                className={cn(
+                  "px-2.5 py-1 text-xs font-medium rounded transition-all",
+                  statusFilter === status
+                    ? "bg-card text-foreground shadow-2xs font-semibold"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                {status === "ALL" ? "All" : status}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -233,81 +258,116 @@ export function MonitorListTable() {
           onAction={search || statusFilter !== "ALL" || methodFilter !== "ALL" ? undefined : () => {}}
         />
       ) : (
-        <div className="rounded-md border bg-card">
+        <div className="rounded-lg border border-border/80 bg-card overflow-hidden shadow-2xs">
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Monitor</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="hidden md:table-cell">Interval</TableHead>
-                <TableHead className="hidden lg:table-cell">Avg Latency</TableHead>
-                <TableHead className="hidden sm:table-cell">Last Checked</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+            <TableHeader className="bg-muted/30">
+              <TableRow className="border-b border-border/80 hover:bg-transparent">
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Monitor</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Status</TableHead>
+                <TableHead className="hidden md:table-cell text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Interval</TableHead>
+                <TableHead className="hidden lg:table-cell text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Latency</TableHead>
+                <TableHead className="hidden sm:table-cell text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Last Checked</TableHead>
+                <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {displayedMonitors.map((m) => (
-                <TableRow key={m.id}>
-                  <TableCell>
-                    <div className="space-y-0.5">
+                <TableRow
+                  key={m.id}
+                  className="border-b border-border/60 hover:bg-muted/40 transition-colors group"
+                >
+                  <TableCell className="py-3">
+                    <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-[10px] uppercase font-mono px-1 py-0">
+                        <span
+                          className={cn(
+                            "text-[10px] font-mono font-semibold px-1.5 py-0.5 rounded border uppercase",
+                            METHOD_COLORS[m.method] || "bg-muted text-muted-foreground"
+                          )}
+                        >
                           {m.method}
-                        </Badge>
+                        </span>
                         <Link
                           href={`/monitors/${m.id}`}
-                          className="font-medium hover:underline flex items-center gap-1"
+                          className="font-semibold text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors flex items-center gap-1 text-sm"
                         >
                           {m.name}
-                          <ExternalLink className="h-3 w-3 text-muted-foreground opacity-50" />
+                          <ExternalLink className="h-3 w-3 text-muted-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity" />
                         </Link>
                       </div>
-                      <p className="text-xs text-muted-foreground font-mono truncate max-w-xs md:max-w-md">
-                        {m.url}
-                      </p>
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
+                        <span className="truncate max-w-xs md:max-w-md">{m.url}</span>
+                        <button
+                          type="button"
+                          onClick={(e) => handleCopyUrl(m.id, m.url, e)}
+                          className="text-muted-foreground/60 hover:text-foreground transition-colors p-0.5"
+                          title="Copy URL"
+                        >
+                          {copiedId === m.id ? (
+                            <Check className="h-3 w-3 text-emerald-500" />
+                          ) : (
+                            <Copy className="h-3 w-3" />
+                          )}
+                        </button>
+                      </div>
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="py-3">
                     <StatusBadge status={m.status} />
                   </TableCell>
-                  <TableCell className="hidden md:table-cell text-xs text-muted-foreground">
+                  <TableCell className="hidden md:table-cell text-xs text-muted-foreground font-mono py-3">
                     Every {m.intervalSeconds}s
                   </TableCell>
-                  <TableCell className="hidden lg:table-cell text-xs">
-                    {m.lastResponseTimeMs ? `${m.lastResponseTimeMs} ms` : "—"}
+                  <TableCell className="hidden lg:table-cell py-3">
+                    {m.lastResponseTimeMs ? (
+                      <span
+                        className={cn(
+                          "text-xs font-mono font-medium px-2 py-0.5 rounded-full inline-block",
+                          m.lastResponseTimeMs < 200
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                            : m.lastResponseTimeMs < 600
+                            ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                            : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                        )}
+                      >
+                        {m.lastResponseTimeMs} ms
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground font-mono">—</span>
+                    )}
                   </TableCell>
-                  <TableCell className="hidden sm:table-cell text-xs text-muted-foreground">
+                  <TableCell className="hidden sm:table-cell text-xs text-muted-foreground font-mono py-3">
                     {m.lastCheckedAt ? new Date(m.lastCheckedAt).toLocaleTimeString() : "Pending"}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell className="text-right py-3">
                     <DropdownMenu>
                       <DropdownMenuTrigger
                         render={
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground">
                             <MoreHorizontal className="h-4 w-4" />
                           </Button>
                         }
                       />
-                      <DropdownMenuContent align="end">
+                      <DropdownMenuContent align="end" className="w-44">
                         <DropdownMenuItem
                           render={
-                            <Link href={`/monitors/${m.id}`} className="cursor-pointer flex items-center w-full">
-                              View Details
+                            <Link href={`/monitors/${m.id}`} className="cursor-pointer flex items-center w-full text-xs font-medium">
+                              View Telemetry
                             </Link>
                           }
                         />
                         <DropdownMenuItem
                           onClick={() => handleTogglePause(m.id, m.status)}
-                          className="cursor-pointer"
+                          className="cursor-pointer text-xs font-medium"
                         >
                           {m.status === "PAUSED" ? (
                             <>
-                              <Play className="mr-2 h-4 w-4 text-emerald-500" />
+                              <Play className="mr-2 h-3.5 w-3.5 text-emerald-500" />
                               <span>Resume Monitor</span>
                             </>
                           ) : (
                             <>
-                              <Pause className="mr-2 h-4 w-4 text-amber-500" />
+                              <Pause className="mr-2 h-3.5 w-3.5 text-amber-500" />
                               <span>Pause Monitor</span>
                             </>
                           )}
@@ -322,7 +382,7 @@ export function MonitorListTable() {
                           trigger={
                             <button
                               type="button"
-                              className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none transition-colors hover:bg-accent text-rose-600 focus:bg-rose-50 dark:focus:bg-rose-950 w-full"
+                              className="relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-xs outline-none transition-colors hover:bg-accent text-rose-600 focus:bg-rose-50 dark:focus:bg-rose-950 w-full font-medium"
                             >
                               <Trash2 className="mr-2 h-3.5 w-3.5" />
                               Delete

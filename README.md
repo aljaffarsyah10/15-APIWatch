@@ -14,6 +14,7 @@
 [![BullMQ](https://img.shields.io/badge/BullMQ-6.7.2-orange?style=for-the-badge)](https://bullmq.io/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker)](https://www.docker.com/)
 [![Tests](https://img.shields.io/badge/Tests-54%2F54%20PASS-10b981?style=for-the-badge)](tests/)
+[![Design System](https://img.shields.io/badge/Design_System-Linear_Inspired-8B5CF6?style=for-the-badge)](docs/UI_UX_GUIDE.md)
 [![License](https://img.shields.io/badge/License-MIT-purple?style=for-the-badge)](LICENSE)
 
 </div>
@@ -36,6 +37,22 @@ Built on **Next.js 16 (Turbopack, Partial Prefetching)**, **PostgreSQL 16**, **R
 
 ---
 
+## 💎 World-Class UI/UX Experience
+
+APIWatch follows an exclusive design system benchmarked against **Linear, Stripe, Raycast, and Vercel**:
+
+- **Dual-Theme Engine (Light & Midnight Dark)**:
+  - **Light Mode**: Crisp, high-contrast Slate surface (`#F8FAFC` base, `#FFFFFF` cards, `#0F172A` text).
+  - **Deep Midnight Dark Mode**: Immersive deep navy palette (`#090D16` base, `#0F172A` cards, `#1E293B` borders).
+  - **Zero-Flicker Switcher**: Powered by `useSyncExternalStore` (React 19 standard) eliminating hydration mismatches.
+- **High-Density Telemetry Cards**: Metric figures formatted in clean monospace tabular typography (`font-mono`) for effortless cognitive scanning.
+- **Categorized Linear Sidebar**: Distinct navigation sections (`MONITORING`, `ALERTS & STATUS`, `PREFERENCES`) with active indicator pills and live scheduler heartbeat.
+- **Interactive Latency Wave Visualizations**: Recharts Area charts with custom gradients, smooth curves, and microsecond tooltips.
+- **Method Color Badges**: Instant visual identification for `GET` (Emerald), `POST` (Blue), `PUT` (Amber), `PATCH` (Purple), and `DELETE` (Rose).
+- **One-Click URL Copy**: Seamless clipboard interaction with green verification feedback.
+
+---
+
 ## ✨ Key Features
 
 | Category | Capability | Description |
@@ -49,6 +66,7 @@ Built on **Next.js 16 (Turbopack, Partial Prefetching)**, **PostgreSQL 16**, **R
 | **Suppression** | **Deduplication** | Prevents notification storms with configurable suppression windows and incident backoff. |
 | **Reporting** | **CSV Audit Export** | One-click history export with automated CSV formula injection protection (CWE-1236). |
 | **Public Status** | **Status Page** | Blazing-fast public status page (`/status`) powered by Next.js 16 Partial Prerendering. |
+| **Manual Probe** | **Check Now** | Instant on-demand check with automated 10-second rate-limiting cooldown and spinner feedback. |
 
 ---
 
@@ -101,49 +119,38 @@ Follow these steps to run the Next.js web application and background worker on y
 #### 1. Prerequisites
 - **Node.js**: v20.x or v22.x (`node -v`)
 - **npm**: 10.x or pnpm 9.x
-- **PostgreSQL**: v16 running locally (or via Docker)
-- **Redis**: v7 running locally (or via Docker)
+- **PostgreSQL**: v16 running locally (or via Docker / Cloud)
+- **Redis**: v7 running locally (or via Upstash Redis)
 
-#### 2. Start PostgreSQL & Redis locally (using Docker if needed)
-```bash
-# Spin up local DB and Redis containers:
-docker run -d --name apiwatch-pg -p 5432:5432 -e POSTGRES_PASSWORD=password -e POSTGRES_DB=apiwatch postgres:16-alpine
-docker run -d --name apiwatch-redis -p 6379:6379 redis:7-alpine
-```
-
-#### 3. Install Dependencies
-```bash
-npm install
-```
-
-#### 4. Configure Environment Variables
+#### 2. Configure Environment Variables
 Copy `.env.example` to `.env`:
 ```bash
 cp .env.example .env
 ```
-Ensure `.env` contains:
+Ensure `.env` contains your database and Redis credentials:
 ```env
-DATABASE_URL="postgresql://postgres:password@localhost:5432/apiwatch?schema=public"
-REDIS_URL="redis://localhost:6379"
+DATABASE_URL="postgresql://postgres:password@localhost:5432/apiwatch"
+REDIS_URL="redis://localhost:6379" # or your Upstash connection string: rediss://...
 BETTER_AUTH_SECRET="dev_secret_replace_with_32_byte_secret"
 BETTER_AUTH_URL="http://localhost:3000"
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ENCRYPTION_KEY="0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef"
 ```
 
-#### 5. Push Database Schema
+#### 3. Install Dependencies & Push Database Schema
 ```bash
+npm install
 npx prisma generate
 npx prisma db push
 ```
 
-#### 6. Start the Next.js Web App
+#### 4. Start the Next.js Web App
 ```bash
 npm run dev
 ```
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-#### 7. Start the Background Monitoring Worker
+#### 5. Start the Background Monitoring Worker
 In a **second terminal window**, start the monitoring engine:
 ```bash
 npm run worker:dev

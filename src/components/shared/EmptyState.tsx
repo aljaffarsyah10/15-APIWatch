@@ -23,20 +23,22 @@ export function EmptyState({
   return (
     <div
       className={cn(
-        "flex min-h-[320px] flex-col items-center justify-center rounded-xl border border-dashed p-8 text-center",
+        "flex min-h-[300px] flex-col items-center justify-center rounded-lg border border-dashed border-border/80 bg-card/40 p-8 text-center",
         className
       )}
     >
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground mb-4">
-        {icon || <Activity className="h-6 w-6" />}
+      <div className="flex h-11 w-11 items-center justify-center rounded-full bg-secondary text-muted-foreground mb-3.5">
+        {icon || <Activity className="h-5 w-5" />}
       </div>
-      <h3 className="text-lg font-semibold tracking-tight">{title}</h3>
-      <p className="mt-2 max-w-sm text-sm text-muted-foreground">
+      <h3 className="text-base font-semibold tracking-tight text-foreground">{title}</h3>
+      <p className="mt-1.5 max-w-sm text-xs text-muted-foreground leading-relaxed">
         {description}
       </p>
       {actionLabel && (
-        <div className="mt-6">
-          <Button onClick={onAction}>{actionLabel}</Button>
+        <div className="mt-5">
+          <Button size="sm" onClick={onAction} className="h-8 px-4 text-xs font-semibold shadow-2xs">
+            {actionLabel}
+          </Button>
         </div>
       )}
     </div>

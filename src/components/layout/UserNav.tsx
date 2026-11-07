@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogOut, Settings, User } from "lucide-react";
+import { LogOut, Settings, Bell, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -51,9 +51,12 @@ export function UserNav({
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0">
+          <Button
+            variant="ghost"
+            className="relative h-8 w-8 rounded-full p-0 ring-1 ring-border hover:ring-ring transition-all"
+          >
             <Avatar size="sm" className="h-8 w-8">
-              <AvatarFallback className="text-xs font-medium">
+              <AvatarFallback className="text-xs font-semibold bg-secondary text-secondary-foreground">
                 {initials || "AW"}
               </AvatarFallback>
             </Avatar>
@@ -61,10 +64,12 @@ export function UserNav({
         }
       />
       <DropdownMenuContent className="w-56" align="end">
-        <DropdownMenuLabel className="font-normal">
+        <DropdownMenuLabel className="font-normal p-2.5">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.name}</p>
-            <p className="text-xs leading-none text-muted-foreground">
+            <p className="text-sm font-semibold leading-none text-foreground">
+              {user.name}
+            </p>
+            <p className="text-xs leading-none text-muted-foreground truncate">
               {user.email}
             </p>
           </div>
@@ -75,32 +80,44 @@ export function UserNav({
             render={
               <Link
                 href="/settings"
-                className="flex items-center gap-2 cursor-pointer w-full"
+                className="flex items-center gap-2 cursor-pointer w-full text-xs font-medium"
               />
             }
           >
-            <User className="h-4 w-4" />
-            <span>Profile</span>
+            <Settings className="h-3.5 w-3.5 text-muted-foreground" />
+            <span>Account Settings</span>
           </DropdownMenuItem>
           <DropdownMenuItem
             render={
               <Link
-                href="/settings"
-                className="flex items-center gap-2 cursor-pointer w-full"
+                href="/settings/alerts"
+                className="flex items-center gap-2 cursor-pointer w-full text-xs font-medium"
               />
             }
           >
-            <Settings className="h-4 w-4" />
-            <span>Settings</span>
+            <Bell className="h-3.5 w-3.5 text-muted-foreground" />
+            <span>Alert Preferences</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            render={
+              <Link
+                href="/status"
+                target="_blank"
+                className="flex items-center justify-between cursor-pointer w-full text-xs font-medium"
+              />
+            }
+          >
+            <span>Public Status Page</span>
+            <ExternalLink className="h-3 w-3 text-muted-foreground" />
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={handleLogout}
-          className="flex items-center gap-2 text-rose-600 dark:text-rose-400 cursor-pointer w-full"
+          className="flex items-center gap-2 text-rose-600 dark:text-rose-400 cursor-pointer w-full text-xs font-medium"
         >
-          <LogOut className="h-4 w-4" />
-          <span>Log out</span>
+          <LogOut className="h-3.5 w-3.5" />
+          <span>Sign Out</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

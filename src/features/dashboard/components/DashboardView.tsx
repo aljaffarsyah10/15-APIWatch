@@ -11,7 +11,9 @@ import {
   Clock,
   PlusCircle,
   RefreshCw,
+  ShieldCheck,
   TrendingDown,
+  Zap,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -104,8 +106,8 @@ export function DashboardView() {
     return (
       <div className="space-y-6">
         <PageHeader
-          title="Dashboard Overview"
-          description="Real-time health status, incident tracking, and latency performance"
+          title="Telemetry Overview"
+          description="Continuous uptime analysis, active probes, and latency distribution"
         />
         <LoadingSkeleton type="card" count={4} />
         <div className="grid gap-6 lg:grid-cols-3">
@@ -124,8 +126,8 @@ export function DashboardView() {
     return (
       <div className="space-y-6">
         <PageHeader
-          title="Dashboard Overview"
-          description="Real-time health status, incident tracking, and latency performance"
+          title="Telemetry Overview"
+          description="Continuous uptime analysis, active probes, and latency distribution"
         />
         <ErrorState
           title="Failed to Load Dashboard Summary"
@@ -143,12 +145,12 @@ export function DashboardView() {
     return (
       <div className="space-y-6">
         <PageHeader
-          title="Dashboard Overview"
-          description="Real-time health status, incident tracking, and latency performance"
+          title="Telemetry Overview"
+          description="Continuous uptime analysis, active probes, and latency distribution"
         >
           <Link
             href="/monitors/new"
-            className={cn(buttonVariants(), "gap-2")}
+            className={cn(buttonVariants(), "gap-2 shadow-sm")}
           >
             <PlusCircle className="h-4 w-4" />
             Add Monitor
@@ -165,13 +167,14 @@ export function DashboardView() {
   }
 
   const activeIncidents = summary?.activeIncidents || [];
+  const isAllHealthy = activeIncidents.length === 0;
 
   return (
     <div className="space-y-6">
       {/* Page Header */}
       <PageHeader
-        title="Dashboard Overview"
-        description="Real-time health status, incident tracking, and latency performance"
+        title="Telemetry Overview"
+        description="Continuous uptime analysis, active probes, and latency distribution"
       >
         <div className="flex items-center gap-2">
           <Button
@@ -179,109 +182,184 @@ export function DashboardView() {
             size="sm"
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="gap-1.5"
+            className="gap-1.5 h-8.5"
           >
             <RefreshCw
-              className={cn("h-3.5 w-3.5", isRefreshing && "animate-spin")}
+              className={cn("h-3.5 w-3.5 text-muted-foreground", isRefreshing && "animate-spin text-primary")}
             />
             <span>Refresh</span>
           </Button>
           <Link
             href="/monitors/new"
-            className={cn(buttonVariants({ size: "sm" }), "gap-2")}
+            className={cn(buttonVariants({ size: "sm" }), "gap-1.5 h-8.5 shadow-2xs")}
           >
-            <PlusCircle className="h-4 w-4" />
+            <PlusCircle className="h-3.5 w-3.5" />
             Add Monitor
           </Link>
         </div>
       </PageHeader>
 
-      {/* Top 4 Summary Cards */}
+      {/* Health Status Banner */}
+      <div
+        className={cn(
+          "flex items-center justify-between p-3.5 px-4.5 rounded-lg border transition-all",
+          isAllHealthy
+            ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-800 dark:text-emerald-300"
+            : "bg-rose-500/5 border-rose-500/20 text-rose-800 dark:text-rose-300"
+        )}
+      >
+        <div className="flex items-center gap-3">
+          {isAllHealthy ? (
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 className="h-4 w-4" />
+            </div>
+          ) : (
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400">
+              <AlertTriangle className="h-4 w-4 animate-pulse" />
+            </div>
+          )}
+          <div>
+            <p className="text-sm font-semibold">
+              {isAllHealthy ? "All Monitored Endpoints Operational" : `${activeIncidents.length} Service Incident Detected`}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {isAllHealthy
+                ? "Background monitoring engine is polling all registered endpoints within threshold parameters."
+                : "One or more HTTP endpoints failed consecutive health assertions."}
+            </p>
+          </div>
+        </div>
+        <div className="hidden sm:flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
+          <ShieldCheck className="h-4 w-4 text-blue-500" />
+          <span>Zero False Positive Filter</span>
+        </div>
+      </div>
+
+      {/* Top 4 Summary KPI Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        {/* Card 1: Total Monitors */}
+        <Card className="hover:border-border transition-all">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Monitors
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Monitors
             </CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400">
+              <Activity className="h-4 w-4" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
+            <div className="text-3xl font-bold tracking-tight font-mono text-foreground">
               {summary?.totalMonitors ?? 0}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              All registered HTTP endpoints
+            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+              <span className="font-medium text-foreground">{summary?.upMonitors ?? 0} active</span>
+              <span>·</span>
+              <span>{(summary?.totalMonitors ?? 0) - (summary?.upMonitors ?? 0)} inactive/paused</span>
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        {/* Card 2: 24h Overall Uptime */}
+        <Card className="hover:border-border transition-all">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
-              Operational (UP)
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Overall Uptime
             </CardTitle>
-            <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <CheckCircle2 className="h-4 w-4" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-              {summary?.upMonitors ?? 0}
+            <div className="text-3xl font-bold tracking-tight font-mono text-emerald-600 dark:text-emerald-400">
+              {summary?.overallUptime ?? 100}%
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {summary?.overallUptime ?? 100}% overall uptime
+              Rolling 24-hour target: 99.90%
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        {/* Card 3: Down Incidents */}
+        <Card className="hover:border-border transition-all">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-rose-600 dark:text-rose-400">
-              Degraded / DOWN
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Incidents
             </CardTitle>
-            <AlertTriangle className="h-4 w-4 text-rose-500" />
+            <div
+              className={cn(
+                "flex h-7 w-7 items-center justify-center rounded-md",
+                (summary?.downMonitors ?? 0) > 0
+                  ? "bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                  : "bg-muted text-muted-foreground"
+              )}
+            >
+              <AlertTriangle className="h-4 w-4" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-rose-600 dark:text-rose-400">
+            <div
+              className={cn(
+                "text-3xl font-bold tracking-tight font-mono",
+                (summary?.downMonitors ?? 0) > 0
+                  ? "text-rose-600 dark:text-rose-400"
+                  : "text-foreground"
+              )}
+            >
               {summary?.downMonitors ?? 0}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {summary?.activeIncidentsCount ?? 0} active incidents
+              {(summary?.activeIncidentsCount ?? 0) === 0
+                ? "No active outages detected"
+                : `${summary?.activeIncidentsCount} alerts dispatched`}
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        {/* Card 4: Avg Response Latency */}
+        <Card className="hover:border-border transition-all">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Avg Response Time
+            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Avg Latency
             </CardTitle>
-            <Clock className="h-4 w-4 text-blue-500" />
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400">
+              <Clock className="h-4 w-4" />
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {summary?.avgResponseTimeMs ?? 0} ms
+            <div className="text-3xl font-bold tracking-tight font-mono text-foreground">
+              {summary?.avgResponseTimeMs ?? 0}
+              <span className="text-base font-normal text-muted-foreground ml-1">ms</span>
             </div>
             <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
               <TrendingDown className="h-3.5 w-3.5 text-emerald-500" />
-              Measured across completed checks
+              <span>Monotonic clock measurement</span>
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Main 2-Column Split */}
+      {/* Main 2-Column Split: Chart & Incidents */}
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Left 2 Cols: Response Time Chart */}
         <div className="lg:col-span-2 space-y-6">
           <Card>
-            <CardHeader>
-              <CardTitle className="text-base font-semibold">
-                Response Time Trend (Past 24 Hours)
-              </CardTitle>
-              <CardDescription className="text-xs">
-                Average latency measured across all active checks
-              </CardDescription>
+            <CardHeader className="border-b border-border/60 pb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-base font-semibold text-foreground">
+                    Response Latency Distribution
+                  </CardTitle>
+                  <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                    Continuous latency metrics across active worker probes
+                  </CardDescription>
+                </div>
+                <div className="flex items-center gap-2 text-xs font-mono text-muted-foreground">
+                  <span className="inline-block h-2 w-2 rounded-full bg-blue-500" />
+                  <span>Mean Latency</span>
+                </div>
+              </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-4">
               <ResponseTimeChart data={chartData} />
             </CardContent>
           </Card>
@@ -289,59 +367,65 @@ export function DashboardView() {
 
         {/* Right Col: Active Incidents */}
         <div>
-          <Card>
-            <CardHeader className="pb-3">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-semibold">
-                  Active Incidents
-                </CardTitle>
-                <span className="text-xs text-muted-foreground">
-                  {activeIncidents.length} active
-                </span>
-              </div>
-              <CardDescription className="text-xs">
-                Endpoints requiring attention
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {activeIncidents.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-6 text-center border rounded-md border-dashed">
-                  <CheckCircle2 className="h-8 w-8 text-emerald-500 mb-2" />
-                  <p className="text-sm font-medium">All Systems Normal</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    No active failures or alerts detected
-                  </p>
+          <Card className="h-full flex flex-col justify-between">
+            <div>
+              <CardHeader className="border-b border-border/60 pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base font-semibold text-foreground">
+                    Active Incidents
+                  </CardTitle>
+                  <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground">
+                    {activeIncidents.length} active
+                  </span>
                 </div>
-              ) : (
-                activeIncidents.map((incident) => (
-                  <div
-                    key={incident.id}
-                    className="flex items-start justify-between p-3 rounded-lg border bg-rose-50/50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900"
-                  >
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium text-rose-900 dark:text-rose-200">
-                        {incident.name}
-                      </p>
-                      <p className="text-xs text-rose-700/80 dark:text-rose-400 font-mono">
-                        {incident.url}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Last checked: {incident.lastCheckedAt ? new Date(incident.lastCheckedAt).toLocaleTimeString() : "Pending"}
-                      </p>
+                <CardDescription className="text-xs text-muted-foreground mt-0.5">
+                  Endpoints currently failing status assertions
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-4 space-y-3">
+                {activeIncidents.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center p-8 text-center rounded-lg border border-dashed border-border/80 bg-muted/20">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mb-2">
+                      <Zap className="h-5 w-5" />
                     </div>
-                    <StatusBadge status="DOWN" />
+                    <p className="text-sm font-semibold text-foreground">All Systems Healthy</p>
+                    <p className="text-xs text-muted-foreground mt-1 max-w-[200px]">
+                      Zero unresolved incidents or outage alerts detected.
+                    </p>
                   </div>
-                ))
-              )}
+                ) : (
+                  activeIncidents.map((incident) => (
+                    <div
+                      key={incident.id}
+                      className="flex items-start justify-between p-3 rounded-lg border bg-rose-500/5 border-rose-500/20"
+                    >
+                      <div className="space-y-1 min-w-0 pr-2">
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {incident.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground font-mono truncate">
+                          {incident.url}
+                        </p>
+                        <p className="text-[11px] text-rose-600 dark:text-rose-400">
+                          Last checked: {incident.lastCheckedAt ? new Date(incident.lastCheckedAt).toLocaleTimeString() : "Pending"}
+                        </p>
+                      </div>
+                      <StatusBadge status="DOWN" />
+                    </div>
+                  ))
+                )}
+              </CardContent>
+            </div>
 
+            <div className="p-4 pt-0">
               <Link
                 href="/monitors"
-                className="flex items-center justify-center gap-1 text-xs font-medium text-primary hover:underline pt-2"
+                className="flex items-center justify-center gap-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-500 transition-colors py-2 border-t border-border/60"
               >
-                View all monitors
+                <span>View all configured monitors</span>
                 <ArrowRight className="h-3 w-3" />
               </Link>
-            </CardContent>
+            </div>
           </Card>
         </div>
       </div>

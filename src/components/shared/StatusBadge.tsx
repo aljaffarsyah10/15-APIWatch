@@ -1,11 +1,5 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
-import {
-  CheckCircle2,
-  AlertTriangle,
-  PauseCircle,
-  HelpCircle,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type MonitorStatusType = "UP" | "DOWN" | "PAUSED" | "UNKNOWN";
@@ -19,7 +13,6 @@ interface StatusBadgeProps {
 export function StatusBadge({
   status,
   className,
-  showIcon = true,
 }: StatusBadgeProps) {
   switch (status) {
     case "UP":
@@ -27,12 +20,12 @@ export function StatusBadge({
         <Badge
           variant="outline"
           className={cn(
-            "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 gap-1.5 font-medium",
+            "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20 font-medium px-2 py-0.5 rounded-full text-[11px] inline-flex items-center gap-1.5",
             className
           )}
         >
-          {showIcon && <CheckCircle2 className="h-3.5 w-3.5" />}
-          UP
+          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+          <span>Operational</span>
         </Badge>
       );
     case "DOWN":
@@ -40,12 +33,12 @@ export function StatusBadge({
         <Badge
           variant="outline"
           className={cn(
-            "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 gap-1.5 font-medium",
+            "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/20 font-medium px-2 py-0.5 rounded-full text-[11px] inline-flex items-center gap-1.5",
             className
           )}
         >
-          {showIcon && <AlertTriangle className="h-3.5 w-3.5" />}
-          DOWN
+          <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse shrink-0" />
+          <span>Down</span>
         </Badge>
       );
     case "PAUSED":
@@ -53,12 +46,12 @@ export function StatusBadge({
         <Badge
           variant="outline"
           className={cn(
-            "bg-zinc-500/10 text-zinc-600 dark:text-zinc-400 border-zinc-500/30 gap-1.5 font-medium",
+            "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20 font-medium px-2 py-0.5 rounded-full text-[11px] inline-flex items-center gap-1.5",
             className
           )}
         >
-          {showIcon && <PauseCircle className="h-3.5 w-3.5" />}
-          PAUSED
+          <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
+          <span>Paused</span>
         </Badge>
       );
     case "UNKNOWN":
@@ -67,12 +60,12 @@ export function StatusBadge({
         <Badge
           variant="outline"
           className={cn(
-            "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/30 gap-1.5 font-medium",
+            "bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-500/20 font-medium px-2 py-0.5 rounded-full text-[11px] inline-flex items-center gap-1.5",
             className
           )}
         >
-          {showIcon && <HelpCircle className="h-3.5 w-3.5" />}
-          UNKNOWN
+          <span className="h-1.5 w-1.5 rounded-full bg-slate-400 shrink-0" />
+          <span>Pending</span>
         </Badge>
       );
   }

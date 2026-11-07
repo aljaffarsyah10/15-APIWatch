@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
+  Check,
+  Copy,
   Download,
   Loader2,
   Pause,
@@ -13,8 +15,8 @@ import {
   Trash2,
 } from "lucide-react";
 import {
-  LineChart,
-  Line,
+  AreaChart,
+  Area,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -23,7 +25,6 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -59,6 +60,14 @@ export function MonitorDetailView({ id }: MonitorDetailViewProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isChecking, setIsChecking] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyUrl = (url: string) => {
+    navigator.clipboard.writeText(url);
+    setCopied(true);
+    toast.success("URL copied to clipboard");
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   const reloadData = async () => {
     try {
@@ -125,32 +134,15 @@ export function MonitorDetailView({ id }: MonitorDetailViewProps) {
     }
   };
 
-  const handleDelete = async () => {
-    if (!monitor) return;
-    try {
-      await monitorApi.delete(monitor.id);
-      toast.success("Monitor deleted", {
-        description: `Removed "${monitor.name}"`,
-      });
-      router.push("/monitors");
-    } catch (err: unknown) {
-      toast.error("Failed to delete monitor", {
-        description: getErrorMessage(err),
-      });
-    }
-  };
-
   const handleManualCheck = async () => {
     if (!monitor) return;
     setIsChecking(true);
     try {
       const result = await monitorApi.checkNow(monitor.id);
-      await reloadData();
-      toast.success("Manual check complete", {
-        description: `Target returned ${result.status} (${
-          result.responseTimeMs ? `${result.responseTimeMs} ms` : "No response"
-        })`,
+      toast.success("Check Completed", {
+        description: `Status: ${result.httpStatus ?? "OK"} · Response time: ${result.responseTimeMs ?? 0}ms`,
       });
+      await reloadData();
     } catch (err: unknown) {
       toast.error("Manual check failed", {
         description: getErrorMessage(err),
@@ -160,9 +152,23 @@ export function MonitorDetailView({ id }: MonitorDetailViewProps) {
     }
   };
 
-  if (isLoading) {
+  const handleDelete = async () => {
+    if (!monitor) return;
+    try {
+      await monitorApi.delete(monitor.id);
+      toast.success("Monitor deleted");
+      router.push("/monitors");
+      router.refresh();
+    } catch (err: unknown) {
+      toast.error("Failed to delete", {
+        description: getErrorMessage(err),
+      });
+    }
+  };
+
+  if (isLoading && !monitor) {
     return (
-      <div className="space-y-6 max-w-5xl">
+      <div className="space-y-6">
         <LoadingSkeleton type="card" count={4} />
         <LoadingSkeleton type="chart" />
         <LoadingSkeleton type="table" count={5} />
@@ -170,65 +176,78 @@ export function MonitorDetailView({ id }: MonitorDetailViewProps) {
     );
   }
 
-  if (error || !monitor) {
+  if (error && !monitor) {
     return (
-      <div className="space-y-6 max-w-5xl">
-        <ErrorState
-          title="Failed to Load Monitor Details"
-          message={error || "Monitor not found"}
-          onRetry={() => {
-            setIsLoading(true);
-            reloadData();
-          }}
-        />
-      </div>
+      <ErrorState
+        title="Failed to Load Monitor Details"
+        message={error}
+        onRetry={() => {
+          setIsLoading(true);
+          reloadData();
+        }}
+      />
     );
   }
 
-  // Generate chart data from real checks
-  const chartData = history
-    .filter((c) => typeof c.responseTimeMs === "number")
-    .slice(0, 15)
+  if (!monitor) return null;
+
+  // Transform check history for chart visualization
+  const chartData = [...history]
     .reverse()
+    .slice(-30)
     .map((c) => ({
       time: new Date(c.checkedAt).toLocaleTimeString([], {
         hour: "2-digit",
         minute: "2-digit",
         second: "2-digit",
       }),
-      latency: c.responseTimeMs,
+      latency: c.responseTimeMs ?? 0,
     }));
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="space-y-6">
       {/* Back button */}
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <div>
         <Link
           href="/monitors"
-          className="flex items-center gap-1 hover:text-foreground transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ArrowLeft className="h-4 w-4" />
-          Back to Monitors
+          <ArrowLeft className="h-3.5 w-3.5" />
+          <span>Back to All Monitors</span>
         </Link>
       </div>
 
-      {/* Monitor Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b">
-        <div className="space-y-1">
+      {/* Monitor Header Profile */}
+      <div className="flex flex-col gap-4 pb-6 md:flex-row md:items-center md:justify-between border-b border-border/80">
+        <div className="space-y-2">
           <div className="flex items-center gap-2.5">
-            <Badge variant="outline" className="font-mono text-xs">
+            <span className="text-xs font-mono font-semibold px-2 py-0.5 rounded border bg-secondary text-secondary-foreground uppercase">
               {monitor.method}
-            </Badge>
-            <h1 className="text-2xl font-bold tracking-tight">{monitor.name}</h1>
+            </span>
+            <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+              {monitor.name}
+            </h1>
             <StatusBadge status={monitor.status} />
           </div>
-          <p className="text-xs text-muted-foreground font-mono flex items-center gap-2">
+          <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
             <span>{monitor.url}</span>
-            <span>•</span>
-            <span>Check every {monitor.intervalSeconds}s</span>
-            <span>•</span>
+            <button
+              type="button"
+              onClick={() => handleCopyUrl(monitor.url)}
+              className="text-muted-foreground hover:text-foreground transition-colors p-0.5"
+              title="Copy URL"
+            >
+              {copied ? (
+                <Check className="h-3.5 w-3.5 text-emerald-500" />
+              ) : (
+                <Copy className="h-3.5 w-3.5" />
+              )}
+            </button>
+            <span className="text-muted-foreground/40">·</span>
+            <span>Interval: Every {monitor.intervalSeconds}s</span>
+            <span className="text-muted-foreground/40">·</span>
             <span>Timeout: {monitor.timeoutMs}ms</span>
-          </p>
+          </div>
         </div>
 
         {/* Action Controls */}
@@ -238,11 +257,11 @@ export function MonitorDetailView({ id }: MonitorDetailViewProps) {
             download
             className={cn(
               buttonVariants({ variant: "outline", size: "sm" }),
-              "gap-1.5"
+              "gap-1.5 text-xs h-8.5"
             )}
           >
-            <Download className="h-4 w-4" />
-            Export CSV
+            <Download className="h-3.5 w-3.5" />
+            <span>Export CSV</span>
           </a>
 
           <Button
@@ -250,38 +269,38 @@ export function MonitorDetailView({ id }: MonitorDetailViewProps) {
             size="sm"
             onClick={handleManualCheck}
             disabled={isChecking || monitor.status === "PAUSED"}
-            className="gap-1.5"
+            className="gap-1.5 text-xs h-8.5"
           >
             {isChecking ? (
-              <Loader2 className="h-4 w-4 animate-spin text-primary" />
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
             ) : (
-              <RotateCcw className="h-4 w-4" />
+              <RotateCcw className="h-3.5 w-3.5" />
             )}
-            Check Now
+            <span>Check Now</span>
           </Button>
 
           <Button
             variant="outline"
             size="sm"
             onClick={handleTogglePause}
-            className="gap-1.5"
+            className="gap-1.5 text-xs h-8.5"
           >
             {monitor.status === "PAUSED" ? (
               <>
-                <Play className="h-4 w-4 text-emerald-500" />
-                Resume
+                <Play className="h-3.5 w-3.5 text-emerald-500" />
+                <span>Resume</span>
               </>
             ) : (
               <>
-                <Pause className="h-4 w-4 text-amber-500" />
-                Pause
+                <Pause className="h-3.5 w-3.5 text-amber-500" />
+                <span>Pause</span>
               </>
             )}
           </Button>
 
           <ConfirmDialog
             title="Delete Monitor?"
-            description={`Are you sure you want to delete "${monitor.name}"? This action cannot be undone.`}
+            description={`Are you sure you want to permanently delete "${monitor.name}"? This action cannot be undone.`}
             confirmLabel="Delete"
             variant="destructive"
             onConfirm={handleDelete}
@@ -289,10 +308,10 @@ export function MonitorDetailView({ id }: MonitorDetailViewProps) {
               <Button
                 variant="outline"
                 size="sm"
-                className="gap-1.5 text-rose-600 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                className="gap-1.5 text-xs h-8.5 text-rose-600 hover:text-rose-700 hover:bg-rose-500/10"
               >
-                <Trash2 className="h-4 w-4" />
-                Delete
+                <Trash2 className="h-3.5 w-3.5" />
+                <span>Delete</span>
               </Button>
             }
           />
@@ -301,67 +320,69 @@ export function MonitorDetailView({ id }: MonitorDetailViewProps) {
 
       {/* 4 Metrics Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
+        <Card className="hover:border-border transition-all">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Uptime Percentage
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+            <div className="text-3xl font-bold font-mono text-emerald-600 dark:text-emerald-400">
               {monitor.uptimePercentage ?? 100}%
             </div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              Across completed checks
+            <p className="text-xs text-muted-foreground mt-1">
+              Across rolling check history
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover:border-border transition-all">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Average Latency
+            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Mean Latency
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {monitor.avgLatencyMs ? `${monitor.avgLatencyMs} ms` : "—"}
+            <div className="text-3xl font-bold font-mono text-foreground">
+              {monitor.avgLatencyMs ? `${monitor.avgLatencyMs}` : "—"}
+              {monitor.avgLatencyMs && <span className="text-base font-normal text-muted-foreground ml-1">ms</span>}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              Arithmetic mean response time
+            <p className="text-xs text-muted-foreground mt-1">
+              Arithmetic average response time
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover:border-border transition-all">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               P95 Latency
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {monitor.p95LatencyMs ? `${monitor.p95LatencyMs} ms` : "—"}
+            <div className="text-3xl font-bold font-mono text-foreground">
+              {monitor.p95LatencyMs ? `${monitor.p95LatencyMs}` : "—"}
+              {monitor.p95LatencyMs && <span className="text-base font-normal text-muted-foreground ml-1">ms</span>}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
-              95th percentile latency
+            <p className="text-xs text-muted-foreground mt-1">
+              95th percentile worst-case
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover:border-border transition-all">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Last Successful At
+            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Last Verified
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-sm font-semibold truncate mt-1">
+            <div className="text-sm font-semibold truncate mt-1 text-foreground">
               {monitor.lastCheckedAt
-                ? new Date(monitor.lastCheckedAt).toLocaleString()
-                : "Awaiting first check"}
+                ? new Date(monitor.lastCheckedAt).toLocaleTimeString()
+                : "Awaiting first probe"}
             </div>
-            <p className="text-[11px] text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-1">
               Target response validated
             </p>
           </CardContent>
@@ -370,50 +391,74 @@ export function MonitorDetailView({ id }: MonitorDetailViewProps) {
 
       {/* Latency History Chart */}
       <Card>
-        <CardHeader>
-          <CardTitle className="text-base font-semibold">
-            Response Time Trend
-          </CardTitle>
-          <CardDescription className="text-xs">
-            Latency history across recent check events
-          </CardDescription>
+        <CardHeader className="border-b border-border/60 pb-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-base font-semibold">
+                Response Time History
+              </CardTitle>
+              <CardDescription className="text-xs mt-0.5">
+                Latency measurements across recent automated checks
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground font-mono">
+              <span className="h-2 w-2 rounded-full bg-blue-500" />
+              <span>Real-time Latency (ms)</span>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-4">
           {chartData.length === 0 ? (
             <div className="h-48 flex items-center justify-center text-xs text-muted-foreground">
-              Awaiting check execution data to build chart...
+              Awaiting check execution data to render trend chart...
             </div>
           ) : (
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="detailGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(150, 150, 150, 0.15)" vertical={false} />
                   <XAxis
                     dataKey="time"
-                    className="text-[10px] text-muted-foreground"
+                    stroke="#888888"
+                    fontSize={11}
                     tickLine={false}
+                    axisLine={false}
                   />
                   <YAxis
-                    className="text-[10px] text-muted-foreground"
+                    stroke="#888888"
+                    fontSize={11}
                     tickLine={false}
-                    unit="ms"
+                    axisLine={false}
+                    tickFormatter={(v) => `${v}ms`}
                   />
                   <Tooltip
-                    contentStyle={{
-                      backgroundColor: "var(--color-card)",
-                      borderRadius: "6px",
-                      border: "1px solid var(--color-border)",
-                      fontSize: "12px",
+                    content={({ active, payload, label }) => {
+                      if (active && payload && payload.length) {
+                        return (
+                          <div className="rounded-lg border bg-popover p-2.5 shadow-md text-xs space-y-1">
+                            <p className="font-semibold text-foreground">Time: {label}</p>
+                            <p className="text-blue-500 font-mono">Latency: {payload[0].value} ms</p>
+                          </div>
+                        );
+                      }
+                      return null;
                     }}
                   />
-                  <Line
+                  <Area
                     type="monotone"
                     dataKey="latency"
-                    stroke="var(--color-primary)"
+                    stroke="#3b82f6"
                     strokeWidth={2}
-                    dot={{ r: 3 }}
+                    fillOpacity={1}
+                    fill="url(#detailGradient)"
                   />
-                </LineChart>
+                </AreaChart>
               </ResponsiveContainer>
             </div>
           )}
@@ -422,57 +467,61 @@ export function MonitorDetailView({ id }: MonitorDetailViewProps) {
 
       {/* Check History Table */}
       <Card>
-        <CardHeader>
+        <CardHeader className="border-b border-border/60 pb-3">
           <CardTitle className="text-base font-semibold">
-            Recent Check History
+            Execution Audit Log
           </CardTitle>
-          <CardDescription className="text-xs">
-            Log of checks executed by the worker engine
+          <CardDescription className="text-xs mt-0.5">
+            Log of checks executed by the background monitoring engine
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-2">
           {history.length === 0 ? (
             <div className="p-8 text-center text-xs text-muted-foreground">
               No checks recorded yet. Checks will appear here as the worker processes them.
             </div>
           ) : (
-            <div className="rounded-md border">
+            <div className="rounded-md border border-border/80 overflow-hidden">
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Status</TableHead>
-                    <TableHead>HTTP Code</TableHead>
-                    <TableHead>Response Time</TableHead>
-                    <TableHead>Failure Reason</TableHead>
-                    <TableHead className="text-right">Timestamp</TableHead>
+                <TableHeader className="bg-muted/30">
+                  <TableRow className="border-b border-border/80">
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider py-3">Status</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider py-3">HTTP Code</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider py-3">Latency</TableHead>
+                    <TableHead className="text-xs font-semibold uppercase tracking-wider py-3">Failure Reason</TableHead>
+                    <TableHead className="text-right text-xs font-semibold uppercase tracking-wider py-3">Timestamp</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {history.map((check) => (
-                    <TableRow key={check.id}>
-                      <TableCell>
-                        <Badge
-                          variant={check.status === "SUCCESS" ? "outline" : "destructive"}
-                          className={cn(
-                            "text-[10px]",
-                            check.status === "SUCCESS" &&
-                              "border-emerald-500/30 text-emerald-600 bg-emerald-500/10"
-                          )}
-                        >
-                          {check.status}
-                        </Badge>
+                    <TableRow key={check.id} className="border-b border-border/60 hover:bg-muted/40 transition-colors">
+                      <TableCell className="py-2.5">
+                        <StatusBadge status={check.status === "SUCCESS" ? "UP" : "DOWN"} />
                       </TableCell>
-                      <TableCell className="font-mono text-xs">
-                        {check.httpStatus ? check.httpStatus : "—"}
+                      <TableCell className="py-2.5 font-mono text-xs">
+                        {check.httpStatus ? (
+                          <span
+                            className={cn(
+                              "px-1.5 py-0.5 rounded font-semibold text-[11px]",
+                              check.httpStatus >= 200 && check.httpStatus < 300
+                                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                                : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                            )}
+                          >
+                            {check.httpStatus}
+                          </span>
+                        ) : (
+                          "—"
+                        )}
                       </TableCell>
-                      <TableCell className="text-xs font-medium">
-                        {check.responseTimeMs ? `${check.responseTimeMs} ms` : "—"}
+                      <TableCell className="py-2.5 font-mono text-xs font-medium">
+                        {check.responseTimeMs ?? 0} ms
                       </TableCell>
-                      <TableCell className="text-xs text-rose-500 max-w-xs truncate">
+                      <TableCell className="py-2.5 text-xs text-muted-foreground max-w-xs truncate">
                         {check.failureReason || "—"}
                       </TableCell>
-                      <TableCell className="text-right text-xs text-muted-foreground">
-                        {new Date(check.checkedAt).toLocaleTimeString()}
+                      <TableCell className="text-right py-2.5 font-mono text-xs text-muted-foreground">
+                        {new Date(check.checkedAt).toLocaleString()}
                       </TableCell>
                     </TableRow>
                   ))}
